@@ -5,6 +5,26 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+async function requireAdmin(request: Request) {
+  const token = request.headers.get("authorization")?.replace("Bearer ", "");
+
+  if (!token) {
+    return { error: "Missing auth token" };
+  }
+
+  const authClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const { data, error } = await authClient.auth.getUser(token);
+
+  if (error || data.user?.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+    return { error: "Unauthorized" };
+  }
+
+  return { user: data.user };
+}
 
 export async function POST(request: Request) {
   const appointment = await request.json();
@@ -27,7 +47,13 @@ export async function POST(request: Request) {
   return NextResponse.json({ ok: true });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const admin = await requireAdmin(request);
+
+  if ("error" in admin) {
+    return NextResponse.json({ ok: false, error: admin.error }, { status: 401 });
+  }
+
   const { data, error } = await supabase
     .from("appointments")
     .select("*")

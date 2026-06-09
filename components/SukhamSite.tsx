@@ -1,5 +1,6 @@
 "use client";
 
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -123,7 +124,14 @@ function useAppointments() {
   const [appointments, setAppointments] = useState<AppointmentEntry[]>([]);
 
   async function loadAppointments() {
-    const response = await fetch("/api/appointments");
+    const { data } = await supabaseBrowser.auth.getSession();
+    const token = data.session?.access_token;
+
+    const response = await fetch("/api/appointments", {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     const result = await response.json();
 
     if (result.ok) {
@@ -152,10 +160,14 @@ function useAppointments() {
   }
 
   async function updateAppointmentStatus(id: string, status: AppointmentStatus) {
+    const { data } = await supabaseBrowser.auth.getSession();
+    const token = data.session?.access_token;
+
     const response = await fetch(`/api/appointments/${id}`, {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({ status })
     });
@@ -1227,6 +1239,9 @@ function AppointmentReviewSection({
 }
 
 export function AdminDashboard() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const { content, updateImage, addItem, updateExpert, resetContent } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
@@ -1248,10 +1263,28 @@ export function AdminDashboard() {
         <Header />
         <main className="section-shell grid min-h-screen place-items-center pt-24">
           <form
-            onSubmit={(event) => {
+            onSubmit={async (event) => {
               event.preventDefault();
-              setAuthenticated(true);
-            }}
+              setAuthError("");
+
+            const { data, error } = await supabaseBrowser.auth.signInWithPassword({
+              email,
+              password
+            });
+
+            if (error) {
+             setAuthError(error.message);
+            return;
+          }
+
+          if (data.user?.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+            await supabaseBrowser.auth.signOut();
+            setAuthError("This email is not allowed as admin.");
+            return;
+          }
+
+          setAuthenticated(true);
+}}
             className="soft-card w-full max-w-md rounded-sukham p-8"
           >
             <Logo />
@@ -1259,11 +1292,11 @@ export function AdminDashboard() {
             <h1 className="mt-2 font-serif text-4xl font-bold text-plum">Secure content access</h1>
             <label className="mt-7 grid gap-2 text-sm font-bold text-plum">
               Email
-              <input required type="email" defaultValue="admin@sukham.local" className="rounded-2xl border border-petal bg-white px-4 py-3 outline-none focus:border-saffron" />
+              <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="rounded-2xl border border-petal bg-white px-4 py-3 outline-none focus:border-saffron" />
             </label>
             <label className="mt-4 grid gap-2 text-sm font-bold text-plum">
               Password
-              <input required type="password" defaultValue="sukham-admin" className="rounded-2xl border border-petal bg-white px-4 py-3 outline-none focus:border-saffron" />
+              <input required type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="rounded-2xl border border-petal bg-white px-4 py-3 outline-none focus:border-saffron" />
             </label>
             <button className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-plum px-5 py-3 text-sm font-bold text-white">
               Login to Dashboard
