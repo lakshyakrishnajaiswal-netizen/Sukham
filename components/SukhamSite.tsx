@@ -33,7 +33,6 @@ import { blogs, brand, experts, gallery, heroSlides, plans, reviews, services, w
 
 const nav = ["Home", "Experts", "Plans", "Workshops", "Blogs", "Gallery"];
 const STORAGE_KEY = "sukham-site-content-v1";
-const APPOINTMENTS_KEY = "sukham-appointments-v1";
 
 type SiteContent = {
   heroSlides: typeof heroSlides;
@@ -120,52 +119,52 @@ function readImageFile(file: File) {
   });
 }
 
-function readAppointments() {
-  if (typeof window === "undefined") return [];
-  const saved = window.localStorage.getItem(APPOINTMENTS_KEY);
-  return saved ? (JSON.parse(saved) as AppointmentEntry[]) : [];
-}
-
-function writeAppointments(appointments: AppointmentEntry[]) {
-  window.localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(appointments));
-  window.dispatchEvent(new Event("sukham-appointments-updated"));
-}
-
 function useAppointments() {
   const [appointments, setAppointments] = useState<AppointmentEntry[]>([]);
 
-  useEffect(() => {
-    function sync() {
-      setAppointments(readAppointments());
+  async function loadAppointments() {
+    const response = await fetch("/api/appointments");
+    const result = await response.json();
+
+    if (result.ok) {
+      setAppointments(result.appointments);
     }
-
-    sync();
-    window.addEventListener("sukham-appointments-updated", sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener("sukham-appointments-updated", sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
-  function addAppointment(entry: Omit<AppointmentEntry, "id" | "status" | "created_at">) {
-    const next = [
-      {
-        ...entry,
-        id: crypto.randomUUID(),
-        status: "Pending" as const,
-        created_at: new Date().toISOString()
-      },
-      ...readAppointments()
-    ];
-    writeAppointments(next);
-    setAppointments(next);
   }
 
-  function updateAppointmentStatus(id: string, status: AppointmentStatus) {
-    const next = appointments.map((appointment) => (appointment.id === id ? { ...appointment, status } : appointment));
-    writeAppointments(next);
-    setAppointments(next);
+  useEffect(() => {
+    loadAppointments();
+  }, []);
+
+  async function addAppointment(entry: Omit<AppointmentEntry, "id" | "status" | "created_at">) {
+    const response = await fetch("/api/appointments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(entry)
+    });
+
+    const result = await response.json();
+
+    if (result.ok) {
+      await loadAppointments();
+    }
+  }
+
+  async function updateAppointmentStatus(id: string, status: AppointmentStatus) {
+    const response = await fetch(`/api/appointments/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status })
+    });
+
+    const result = await response.json();
+
+    if (result.ok) {
+      await loadAppointments();
+    }
   }
 
   return { appointments, addAppointment, updateAppointmentStatus };
@@ -617,20 +616,11 @@ function LocateCentre() {
 
 function Appointment() {
   const [status, setStatus] = useState("");
-  const { addAppointment } = useAppointments();
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
-    addAppointment({
-      name: data.name,
-      phone_number: data.phone_number,
-      email: data.email,
-      service: data.service,
-      preferred_date: data.preferred_date,
-      preferred_time: data.preferred_time,
-      message: data.message || ""
-    });
+    
     try {
       await fetch("/api/appointments", { method: "POST", body: JSON.stringify(data) });
     } catch {

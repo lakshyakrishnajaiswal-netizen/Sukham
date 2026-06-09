@@ -1,22 +1,41 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 export async function POST(request: Request) {
   const appointment = await request.json();
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (url && serviceRoleKey) {
-    const supabase = createClient(url, serviceRoleKey);
-    const { error } = await supabase.from("appointments").insert({
-      ...appointment,
-      status: "Pending"
-    });
+  const { error } = await supabase.from("appointments").insert({
+    name: appointment.name,
+    phone_number: appointment.phone_number,
+    email: appointment.email,
+    service: appointment.service,
+    preferred_date: appointment.preferred_date,
+    preferred_time: appointment.preferred_time,
+    message: appointment.message || "",
+    status: "Pending"
+  });
 
-    if (error) {
-      return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-    }
+  if (error) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, status: "Pending" });
+  return NextResponse.json({ ok: true });
+}
+
+export async function GET() {
+  const { data, error } = await supabase
+    .from("appointments")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, appointments: data });
 }
