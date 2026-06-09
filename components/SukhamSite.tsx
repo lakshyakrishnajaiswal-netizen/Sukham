@@ -43,7 +43,7 @@ type SiteContent = {
   gallery: typeof gallery;
 };
 
-type AppointmentStatus = "Pending" | "Approved" | "Rejected";
+type AppointmentStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
 
 type AppointmentEntry = {
   id: string;
@@ -1182,9 +1182,9 @@ function AppointmentReviewSection({
                 <td className="py-4">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-bold ${
-                      appointment.status === "Approved"
+                      appointment.status === "Confirmed"
                         ? "bg-green-50 text-leaf"
-                        : appointment.status === "Rejected"
+                        : appointment.status === "Cancelled"
                           ? "bg-red-50 text-red-600"
                           : "bg-blush text-magenta"
                     }`}
@@ -1196,14 +1196,14 @@ function AppointmentReviewSection({
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => onStatusChange(appointment.id, "Approved")}
+                      onClick={() => onStatusChange(appointment.id, "Confirmed")}
                       className="rounded-full bg-leaf px-3 py-2 text-xs font-bold text-white"
                     >
                       Approve
                     </button>
                     <button
                       type="button"
-                      onClick={() => onStatusChange(appointment.id, "Rejected")}
+                      onClick={() => onStatusChange(appointment.id, "Cancelled")}
                       className="rounded-full bg-white px-3 py-2 text-xs font-bold text-red-600 shadow-sm"
                     >
                       Reject
