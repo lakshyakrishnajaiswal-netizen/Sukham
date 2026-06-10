@@ -1129,27 +1129,35 @@ function exportAppointmentsCsv(appointments: AppointmentEntry[]) {
 function AppointmentReviewSection({
   appointments,
   search,
+  statusFilter,
   onSearch,
   onStatusChange
 }: {
   appointments: AppointmentEntry[];
   search: string;
+  statusFilter: "All" | AppointmentStatus;
   onSearch: (value: string) => void;
   onStatusChange: (id: string, status: AppointmentStatus) => void;
 }) {
   const filteredAppointments = appointments.filter((appointment) => {
-    const haystack = [
-      appointment.name,
-      appointment.phone_number,
-      appointment.email,
-      appointment.service,
-      appointment.status,
-      appointment.preferred_date,
-      appointment.preferred_time,
-      appointment.message
-    ].join(" ").toLowerCase();
-    return haystack.includes(search.toLowerCase());
-  });
+  const haystack = [
+    appointment.name,
+    appointment.phone_number,
+    appointment.email,
+    appointment.service,
+    appointment.status,
+    appointment.preferred_date,
+    appointment.preferred_time,
+    appointment.message
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const matchesSearch = haystack.includes(search.trim().toLowerCase());
+  const matchesStatus = statusFilter === "All" || appointment.status === statusFilter;
+
+  return matchesSearch && matchesStatus;
+});
 
   return (
     <section className="soft-card rounded-sukham p-6">
@@ -1331,6 +1339,8 @@ export function AdminDashboard() {
   } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
   const [appointmentSearch, setAppointmentSearch] = useState("");
+  const [appointmentStatusFilter, setAppointmentStatusFilter] =
+  useState<"All" | AppointmentStatus>("All");
   const modules = useMemo(() => [
     ["Homepage", "Hero images, text and CTA buttons", content.heroSlides.length, Upload],
     ["Experts", "Profiles, certificates and qualifications", content.experts.length, HeartPulse],
@@ -1422,7 +1432,19 @@ export function AdminDashboard() {
               />
             </div>
             <button className="grid h-12 w-12 place-items-center rounded-full bg-white text-plum shadow-sm" aria-label="Filter appointments">
-              <Filter className="h-5 w-5" />
+             <select
+                value={appointmentStatusFilter}
+                onChange={(event) =>
+                  setAppointmentStatusFilter(event.target.value as "All" | AppointmentStatus)
+                }
+                className="h-12 rounded-full border border-petal bg-white px-4 text-sm font-bold text-plum outline-none focus:border-saffron"
+              >
+                <option value="All">All</option>
+                <option value="Pending">Pending</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
             </button>
           </div>
         </div>
@@ -1448,11 +1470,12 @@ export function AdminDashboard() {
         </div>
         <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.72fr]">
           <AppointmentReviewSection
-            appointments={appointments}
-            search={appointmentSearch}
-            onSearch={setAppointmentSearch}
-            onStatusChange={updateAppointmentStatus}
-          />
+  appointments={appointments}
+  search={appointmentSearch}
+  statusFilter={appointmentStatusFilter}
+  onSearch={setAppointmentSearch}
+  onStatusChange={updateAppointmentStatus}
+/>
           <div className="soft-card rounded-sukham p-6">
             <h2 className="font-serif text-3xl font-bold text-plum">Supabase tables</h2>
             <div className="mt-5 grid gap-3">
