@@ -75,7 +75,14 @@ function useEditableContent() {
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved) setContent({ ...defaultContent, ...JSON.parse(saved) });
+    if (saved) {
+  try {
+    setContent({ ...defaultContent, ...JSON.parse(saved) });
+  } catch {
+    window.localStorage.removeItem(STORAGE_KEY);
+    setContent(defaultContent);
+  }
+};
   }, []);
 
   function commit(next: SiteContent) {
@@ -133,13 +140,43 @@ function useEditableContent() {
     const next = structuredClone(content) as SiteContent;
     next.gallery = next.gallery.filter((_, imageIndex) => imageIndex !== index);
     commit(next);
-  } 
+  }
+  function removeWorkshop(index: number) {
+  const next = structuredClone(content) as SiteContent;
+  next.workshops = next.workshops.filter((_, workshopIndex) => workshopIndex !== index);
+  commit(next);
+}
+
+function removeBlog(index: number) {
+  const next = structuredClone(content) as SiteContent;
+  next.blogs = next.blogs.filter((_, blogIndex) => blogIndex !== index);
+  commit(next);
+}
+
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
   }
 
-  return { content, updateImage, addItem, updateExpert, addService, removeService, addGalleryImage, removeGalleryImage, resetContent };
+  return { content, updateImage, addItem, updateExpert, addService, removeService, addGalleryImage, removeGalleryImage, removeWorkshop, removeBlog, resetContent };
+}
+async function uploadImageFile(file: File, bucket = "gallery") {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("bucket", bucket);
+
+  const response = await fetch("/api/upload-image", {
+    method: "POST",
+    body: formData
+  });
+
+  const result = await response.json();
+
+  if (!result.ok) {
+    throw new Error(result.error || "Image upload failed");
+  }
+
+  return result.url as string;
 }
 
 function readImageFile(file: File) {
@@ -793,18 +830,21 @@ function ImageUploadCard({
   subtitle,
   image,
   onChange,
+  bucket = "gallery",
   portrait = false
 }: {
   title: string;
   subtitle?: string;
   image: string;
   onChange: (image: string) => void;
+  bucket?: string;
   portrait?: boolean;
 }) {
+  const [imageUrl, setImageUrl] = useState("");
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    onChange(await readImageFile(file));
+    onChange(await uploadImageFile(file, bucket));
   }
 
   return (
@@ -820,6 +860,33 @@ function ImageUploadCard({
           Change Picture
           <input type="file" accept="image/*" className="sr-only" onChange={handleFile} />
         </label>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+
+            const cleanUrl = imageUrl.trim();
+
+            if (!cleanUrl) return;
+
+            onChange(cleanUrl);
+            setImageUrl("");
+          }}
+          className="mt-3 grid gap-2"
+        >
+          <input
+            value={imageUrl}
+            onChange={(event) => setImageUrl(event.target.value)}
+            placeholder="Paste Supabase image URL"
+            className="h-11 rounded-full border border-petal bg-blush px-4 text-xs outline-none focus:border-saffron"
+          />
+
+          <button
+            type="submit"
+            className="rounded-full bg-white px-4 py-2 text-xs font-bold text-plum shadow-sm"
+          >
+            Use URL
+          </button>
+        </form>
       </div>
     </article>
   );
@@ -874,6 +941,7 @@ function ImageManager({
             title={`Slide ${index + 1}`}
             subtitle={slide.title}
             image={slide.image}
+            bucket="hero"
             onChange={(image) => updateImage("heroSlides", index, image)}
           />
         ))}
@@ -887,6 +955,7 @@ function ImageManager({
             subtitle={expert.role}
             image={expert.image}
             portrait
+            bucket="experts"
             onChange={(image) => updateImage("experts", index, image)}
           />
         ))}
@@ -900,6 +969,7 @@ function ImageManager({
             subtitle="Client photo"
             image={review.image}
             portrait
+            bucket="reviews"
             onChange={(image) => updateImage("reviews", index, image)}
           />
         ))}
@@ -912,6 +982,7 @@ function ImageManager({
             title={workshop.title}
             subtitle={`${workshop.date} · ${workshop.time}`}
             image={workshop.image}
+            bucket="workshops"
             onChange={(image) => updateImage("workshops", index, image)}
           />
         ))}
@@ -924,6 +995,7 @@ function ImageManager({
             title={blog.title}
             subtitle={blog.summary}
             image={blog.image}
+            bucket="blogs"
             onChange={(image) => updateImage("blogs", index, image)}
           />
         ))}
@@ -935,12 +1007,22 @@ function ImageManager({
             event.preventDefault();
 
             const form = event.currentTarget;
+
+            const galleryUrlInput = form.elements.namedItem("gallery_url") as HTMLInputElement;
+            const galleryUrl = galleryUrlInput.value.trim();
+
+            if (galleryUrl) {
+              addGalleryImage(galleryUrl);
+              form.reset();
+              return;
+            }
+
             const fileInput = form.elements.namedItem("gallery_file") as HTMLInputElement;
             const imageFile = fileInput.files?.[0];
 
             if (!imageFile) return;
 
-            addGalleryImage(await readImageFile(imageFile));
+            addGalleryImage(await uploadImageFile(imageFile, "gallery"));
             form.reset();
           }}
           className="rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
@@ -948,11 +1030,18 @@ function ImageManager({
           <h3 className="font-serif text-xl font-bold text-plum">Add gallery image</h3>
 
           <input
+            name="gallery_url"
+            placeholder="Paste Supabase image URL"
+            className="mt-4 h-12 w-full rounded-full border border-petal bg-blush px-5 text-sm outline-none focus:border-saffron"
+          />
+
+          <input
             name="gallery_file"
             type="file"
             accept="image/*"
-            className="mt-4 h-12 w-full rounded-full border border-petal bg-blush px-5 text-sm outline-none focus:border-saffron"
-           />
+            className="mt-3 h-12 w-full rounded-full border border-petal bg-blush px-5 text-sm outline-none focus:border-saffron"
+          />
+
           <button className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-plum px-5 py-3 text-sm font-bold text-white">
             Add Image
           </button>
@@ -962,6 +1051,7 @@ function ImageManager({
             <ImageUploadCard
               title={`Gallery image ${index + 1}`}
               image={image}
+              bucket="gallery"
               onChange={(nextImage) => updateImage("gallery", index, nextImage)}
             />
 
@@ -1010,13 +1100,17 @@ function ImageFileField({ label }: { label: string }) {
   );
 }
 
-async function getUploadedImage(form: HTMLFormElement, fallbackImage: string) {
+async function getUploadedImage(
+  form: HTMLFormElement,
+  bucket: string,
+  fallbackImage: string
+) {
   const fileInput = form.elements.namedItem("image_file") as HTMLInputElement;
   const imageFile = fileInput.files?.[0];
 
   if (!imageFile) return fallbackImage;
 
-  return readImageFile(imageFile);
+  return uploadImageFile(imageFile, bucket);
 }
 
 function FormPanel({
@@ -1050,11 +1144,22 @@ function FormPanel({
 function AdminContentManager({
   content,
   addItem,
-  updateExpert
+  updateExpert,
+  removeWorkshop,
+  removeBlog
 }: {
   content: SiteContent;
-  addItem: (section: "workshops" | "blogs" | "reviews" | "experts", item: SiteContent["workshops"][number] | SiteContent["blogs"][number] | SiteContent["reviews"][number] | SiteContent["experts"][number]) => void;
+  addItem: (
+    section: "workshops" | "blogs" | "reviews" | "experts",
+    item:
+      | SiteContent["workshops"][number]
+      | SiteContent["blogs"][number]
+      | SiteContent["reviews"][number]
+      | SiteContent["experts"][number]
+  ) => void;
   updateExpert: (index: number, fields: Partial<SiteContent["experts"][number]>) => void;
+  removeWorkshop: (index: number) => void;
+  removeBlog: (index: number) => void;
 }) {
   return (
     <section className="soft-card mb-8 rounded-sukham p-6">
@@ -1075,11 +1180,13 @@ function AdminContentManager({
               description: data.description || "Workshop details coming soon.",
               image: await getUploadedImage(
                 form,
+                "workshops",
                 "https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=900&q=85"
               )
             });
           }}
         >
+          <Field label="Supabase Image URL" name="image" />
           <Field label="Title" name="title" />
           <Field label="Date" name="date" placeholder="Every Saturday" />
           <Field label="Time" name="time" placeholder="8:00 AM" />
@@ -1087,6 +1194,28 @@ function AdminContentManager({
           <ImageFileField label="Workshop Image" />
           <TextAreaField label="Description" name="description" />
         </FormPanel>
+        <section className="rounded-sukham border border-gold/20 bg-white p-5 shadow-sm">
+            <h3 className="font-serif text-2xl font-bold text-plum">Delete Workshops</h3>
+
+            <div className="mt-5 grid gap-3">
+              {content.workshops.map((workshop, index) => (
+                <div
+                  key={`${workshop.title}-${index}`}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-petal bg-blush px-4 py-3"
+                >
+                  <span className="text-sm font-bold text-plum">{workshop.title}</span>
+
+                  <button
+                    type="button"
+                    onClick={() => removeWorkshop(index)}
+                    className="rounded-full bg-red-50 px-3 py-2 text-xs font-bold text-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
 
         <FormPanel
           title="Add Blog"
@@ -1097,15 +1226,39 @@ function AdminContentManager({
               summary: data.summary || "Helpful wellness insight from Sukham.",
               image: await getUploadedImage(
                 form,
+                "blogs",
                 "https://images.unsplash.com/photo-1593164842264-854604db2260?auto=format&fit=crop&w=900&q=85"
               )
             });
           }}
         >
+          <Field label="Supabase Image URL" name="image" />
           <Field label="Title" name="title" />
           <ImageFileField label="Blog Image" />
           <TextAreaField label="Summary" name="summary" />
         </FormPanel>
+        <section className="rounded-sukham border border-gold/20 bg-white p-5 shadow-sm">
+          <h3 className="font-serif text-2xl font-bold text-plum">Delete Blogs</h3>
+
+          <div className="mt-5 grid gap-3">
+            {content.blogs.map((blog, index) => (
+              <div
+                key={`${blog.title}-${index}`}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-petal bg-blush px-4 py-3"
+              >
+                <span className="text-sm font-bold text-plum">{blog.title}</span>
+
+                <button
+                  type="button"
+                  onClick={() => removeBlog(index)}
+                  className="rounded-full bg-red-50 px-3 py-2 text-xs font-bold text-red-600"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <FormPanel
           title="Add Review"
@@ -1116,12 +1269,14 @@ function AdminContentManager({
               rating: Number(data.rating || 5),
               image: await getUploadedImage(
                 form,
+                "reviews",
                 "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80"
               )
               ,review: data.review || "A warm and professional healing experience."
             });
           }}
         >
+          <Field label="Supabase Image URL" name="image" />
           <Field label="Client Name" name="name" />
           <Field label="Rating" name="rating" type="number" value="5" />
           <ImageFileField label="Client Image" />
@@ -1137,6 +1292,7 @@ function AdminContentManager({
               role: data.role || "Sukham Wellness Expert",
               image: await getUploadedImage(
                 form,
+                "experts",
                 "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=900&q=85"
               ),
               bio: data.bio || "Expert profile details coming soon.",
@@ -1145,6 +1301,7 @@ function AdminContentManager({
             });
           }}
         >
+          <Field label="Supabase Image URL" name="image" />
           <Field label="Name" name="name" />
           <Field label="Role / Qualification" name="role" />
           <ImageFileField label="Expert Image" />
@@ -1435,6 +1592,8 @@ export function AdminDashboard() {
   removeService,
   addGalleryImage,
   removeGalleryImage,
+  removeWorkshop,
+  removeBlog,
   resetContent
   } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
@@ -1546,7 +1705,13 @@ export function AdminDashboard() {
           resetContent={resetContent}
         />
         <ServicesManager services={content.services} addService={addService} removeService={removeService} />
-        <AdminContentManager content={content} addItem={addItem} updateExpert={updateExpert} />
+        <AdminContentManager
+  content={content}
+  addItem={addItem}
+  updateExpert={updateExpert}
+  removeWorkshop={removeWorkshop}
+  removeBlog={removeBlog}
+/>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.72fr]">
           <AppointmentReviewSection

@@ -5,6 +5,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
 async function requireAdmin(request: Request) {
   const token = request.headers.get("authorization")?.replace("Bearer ", "");
 
