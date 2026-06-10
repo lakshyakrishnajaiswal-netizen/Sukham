@@ -795,6 +795,21 @@ function Footer() {
           </div>
         </div>
       </div>
+      <div className="section-shell mt-10 border-t border-petal pt-5 text-center">
+        <p className="text-xs leading-6 text-ink/45">
+          Website made and maintained by Lakshya Krishna Jaiswal under Sukham. For queries, please contact{" "}
+          <a href="tel:+918252185300" className="font-semibold text-ink/60 hover:text-saffron">
+            +91 8252185300
+          </a>{" "}
+          or mail at{" "}
+          <a
+            href="mailto:lakshyakrishnajaiswal@gmail.com"
+            className="font-semibold text-ink/60 hover:text-saffron"
+          >
+            lakshyakrishnajaiswal@gmail.com
+          </a>
+        </p>
+      </div>
     </footer>
   );
 }
