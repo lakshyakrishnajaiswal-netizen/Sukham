@@ -474,6 +474,158 @@ function Reviews({ items }: { items: typeof reviews }) {
     </section>
   );
 }
+function SukhamPhilosophy() {
+  const affectedSystems = [
+    "Postural Disorders",
+    "Musculoskeletal Disorders",
+    "Neurological & Psychological Disorders",
+    "Cardiovascular-Respiratory Disorders",
+    "Digestive & Endocrine Disorders",
+    "Urogenital & Gynecological Disorders",
+    "Autoimmune Disorders"
+  ];
+
+  const pillars = [
+    {
+      title: "Yoga",
+      copy:
+        "Yoga means union. Its practice integrates physical, mental and spiritual energies that together enhance health and wellbeing."
+    },
+    {
+      title: "Physiotherapy",
+      copy:
+        "Physiotherapy is a holistic approach addressing physical, emotional, psychological and social aspects to rehabilitate, strengthen and maintain physical health."
+    },
+    {
+      title: "Nutrition",
+      copy:
+        "Nutrition supports healing, energy, recovery and long-term balance by aligning daily nourishment with body needs and lifestyle goals."
+    }
+  ];
+
+  const aims = [
+    "Heal and balance the body according to body type",
+    "Maintain health with respect to individual body type",
+    "Understand true potential and passion with respect to body type"
+  ];
+
+  const focus = ["In-depth assessment", "Accurate diagnosis", "Treating the root cause"];
+
+  const goals = [
+    "Improve mobility, strength, flexibility and stability",
+    "Heal, enhance and maintain quality of life",
+    "Recovery with happiness"
+  ];
+
+  const missions = [
+    "Provide right health education to every individual",
+    "Provide a holistic treatment approach",
+    "Achieve desirable results naturally with scientifically proven methods"
+  ];
+
+  const visions = [
+    "Support physical, mental, emotional, spiritual and environmental wellbeing",
+    "Maintain the progress achieved in treatment",
+    "Build a blissful balance in life"
+  ];
+
+  return (
+    <section className="section-shell py-24">
+      <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+        <div className="sticky top-28 rounded-sukham bg-plum p-8 text-white shadow-wellness">
+          <p className="text-sm font-bold uppercase text-gold">Sukham Philosophy</p>
+
+          <h2 className="mt-3 font-serif text-4xl font-bold leading-tight md:text-5xl">
+            Ancient wisdom with the integrity of modern intelligence
+          </h2>
+
+          <p className="mt-5 leading-8 text-white/78">
+            Modern lifestyle, traumatic diseases and disorders can affect quality of life across
+            multiple systems of the body. Sukham brings yoga, physiotherapy and nutrition together
+            to support holistic healing, recovery and balance.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            {affectedSystems.map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-white/86"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-6">
+          <div className="soft-card rounded-sukham p-7">
+            <p className="text-sm font-bold uppercase text-saffron">Introduction</p>
+
+            <h3 className="mt-2 font-serif text-3xl font-bold text-plum">
+              Grounded in yoga, physiotherapy and nutrition
+            </h3>
+
+            <p className="mt-4 leading-8 text-ink/72">
+              Sukham is grounded on the principles of ancient wisdom with the integrity of modern
+              intelligence through yoga, physiotherapy and nutrition.
+            </p>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {pillars.map((pillar) => (
+                <article key={pillar.title} className="rounded-2xl border border-petal bg-blush p-5">
+                  <h4 className="font-serif text-2xl font-bold text-plum">{pillar.title}</h4>
+                  <p className="mt-3 text-sm leading-6 text-ink/68">{pillar.copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <InfoList title="Sukham's Aim" items={aims} />
+            <InfoList title="We Aim On" items={focus} />
+            <InfoList title="Our Goals" items={goals} />
+            <InfoList title="Our Mission" items={missions} />
+          </div>
+
+          <div className="soft-card rounded-sukham p-7">
+            <p className="text-sm font-bold uppercase text-saffron">Sukham's Vision</p>
+
+            <h3 className="mt-2 font-serif text-3xl font-bold text-plum">
+              Building a blissful balance in life
+            </h3>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              {visions.map((vision) => (
+                <div
+                  key={vision}
+                  className="rounded-2xl border border-gold/20 bg-white px-4 py-4 text-sm font-bold leading-6 text-plum shadow-sm"
+                >
+                  {vision}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+function InfoList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <article className="soft-card rounded-sukham p-6">
+      <h3 className="font-serif text-2xl font-bold text-plum">{title}</h3>
+
+      <div className="mt-5 grid gap-3">
+        {items.map((item) => (
+          <div key={item} className="flex gap-3 text-sm font-semibold leading-6 text-ink/72">
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-leaf" />
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
 
 function Experts({ items }: { items: typeof experts }) {
   return (
@@ -824,6 +976,7 @@ export function SukhamSite() {
       <main>
         <Hero slides={content.heroSlides} />
         <Reviews items={content.reviews} />
+        <SukhamPhilosophy />
         <Experts items={content.experts} />
         <Services items={content.services} />
         <Plans />
