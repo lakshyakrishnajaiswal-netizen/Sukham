@@ -43,6 +43,7 @@ type SiteContent = {
   blogs: typeof blogs;
   gallery: typeof gallery;
   services: typeof services;
+  plans: typeof plans;
 };
 
 type AppointmentStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
@@ -67,7 +68,8 @@ const defaultContent: SiteContent = {
   workshops,
   blogs,
   gallery,
-  services
+  services,
+  plans
 };
 
 function useEditableContent() {
@@ -152,13 +154,30 @@ function removeBlog(index: number) {
   next.blogs = next.blogs.filter((_, blogIndex) => blogIndex !== index);
   commit(next);
 }
+  function addPlan(plan: SiteContent["plans"][number]) {
+    const next = structuredClone(content) as SiteContent;
+    next.plans = [plan, ...next.plans];
+    commit(next);
+  }
+
+  function updatePlan(index: number, fields: Partial<SiteContent["plans"][number]>) {
+    const next = structuredClone(content) as SiteContent;
+    next.plans[index] = { ...next.plans[index], ...fields };
+    commit(next);
+  }
+
+  function removePlan(index: number) {
+    const next = structuredClone(content) as SiteContent;
+    next.plans = next.plans.filter((_, planIndex) => planIndex !== index);
+    commit(next);
+  }
 
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
   }
 
-  return { content, updateImage, addItem, updateExpert, addService, removeService, addGalleryImage, removeGalleryImage, removeWorkshop, removeBlog, resetContent };
+  return { content, updateImage, addItem, updateExpert, addService, removeService, addGalleryImage, removeGalleryImage, removeWorkshop, removeBlog, resetContent, addPlan, updatePlan, removePlan };
 }
 async function uploadImageFile(file: File, bucket = "gallery") {
   const formData = new FormData();
@@ -680,20 +699,46 @@ function Services({ items }: { items: string[] }) {
   );
 }
 
-function Plans() {
+function Plans({ items }: { items: typeof plans }) {
   return (
     <section id="plans" className="section-shell py-24">
-      <SectionHeading eyebrow="Our Plans" title="Premium programs that can grow with the centre" copy="The admin can add, edit, remove and feature unlimited plans." />
+      <SectionHeading
+        eyebrow="Our Plans"
+        title="Premium programs that can grow with the centre"
+        copy="Choose a focused wellness, recovery or complete healing plan based on your goals."
+      />
+
       <div className="grid gap-6 lg:grid-cols-3">
-        {plans.map((plan) => (
-          <article key={plan.name} className={`rounded-sukham border p-7 shadow-wellness ${plan.featured ? "border-saffron bg-plum text-white" : "border-gold/20 bg-white"}`}>
-            {plan.featured && <p className="mb-4 inline-flex rounded-full bg-saffron px-3 py-1 text-xs font-bold text-white">Featured</p>}
-            <h3 className={`font-serif text-3xl font-bold ${plan.featured ? "text-white" : "text-plum"}`}>{plan.name}</h3>
-            <p className={`mt-2 font-bold ${plan.featured ? "text-orange-100" : "text-saffron"}`}>{plan.price}</p>
+        {items.map((plan) => (
+          <article
+            key={plan.name}
+            className={`rounded-sukham border p-7 shadow-wellness ${
+              plan.featured ? "border-saffron bg-plum text-white" : "border-gold/20 bg-white"
+            }`}
+          >
+            {plan.featured && (
+              <p className="mb-4 inline-flex rounded-full bg-saffron px-3 py-1 text-xs font-bold text-white">
+                Featured
+              </p>
+            )}
+
+            <h3 className={`font-serif text-3xl font-bold ${plan.featured ? "text-white" : "text-plum"}`}>
+              {plan.name}
+            </h3>
+
+            <p className={`mt-3 text-3xl font-black ${plan.featured ? "text-gold" : "text-saffron"}`}>
+              Rs {plan.price}/-
+            </p>
+
+            <p className={`mt-2 font-bold ${plan.featured ? "text-orange-100" : "text-saffron"}`}>
+              {plan.priceLabel}
+            </p>
+
             <div className="mt-7 grid gap-4">
               {plan.features.map((feature) => (
                 <div key={feature} className="flex gap-3 text-sm font-semibold">
-                  <Check className={`h-5 w-5 ${plan.featured ? "text-gold" : "text-leaf"}`} /> {feature}
+                  <Check className={`h-5 w-5 ${plan.featured ? "text-gold" : "text-leaf"}`} />
+                  {feature}
                 </div>
               ))}
             </div>
@@ -979,7 +1024,7 @@ export function SukhamSite() {
         <SukhamPhilosophy />
         <Experts items={content.experts} />
         <Services items={content.services} />
-        <Plans />
+        <Plans items={content.plans} />
         <WorkshopsAndBlogs items={content.workshops} />
         <Blogs items={content.blogs} />
         <Gallery images={content.gallery} />
@@ -1745,6 +1790,138 @@ function ServicesManager({
     </section>
   );
 }
+function PlansManager({
+  plans,
+  addPlan,
+  updatePlan,
+  removePlan
+}: {
+  plans: SiteContent["plans"];
+  addPlan: (plan: SiteContent["plans"][number]) => void;
+  updatePlan: (index: number, fields: Partial<SiteContent["plans"][number]>) => void;
+  removePlan: (index: number) => void;
+}) {
+  return (
+    <section className="soft-card mb-8 rounded-sukham p-6">
+      <p className="text-sm font-bold uppercase text-saffron">Plans Manager</p>
+      <h2 className="mt-1 font-serif text-4xl font-bold text-plum">Edit plans and pricing</h2>
+      <p className="mt-3 max-w-2xl leading-7 text-ink/68">
+        Add, edit, feature or remove plans shown on the homepage.
+      </p>
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+
+          const form = event.currentTarget;
+          const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+
+          addPlan({
+            name: data.name || "New Plan",
+            price: data.price || "0",
+            priceLabel: data.priceLabel || "Custom Program",
+            featured: data.featured === "on",
+            features: data.features
+              .split(",")
+              .map((feature) => feature.trim())
+              .filter(Boolean)
+          });
+
+          form.reset();
+        }}
+        className="mt-6 rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
+      >
+        <h3 className="font-serif text-2xl font-bold text-plum">Add Plan</h3>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <Field label="Plan Name" name="name" />
+          <Field label="Price" name="price" placeholder="4999" />
+          <Field label="Price Label" name="priceLabel" placeholder="Recovery Focus" />
+
+          <label className="flex items-center gap-3 rounded-2xl border border-petal bg-blush px-4 py-3 text-sm font-bold text-plum">
+            <input type="checkbox" name="featured" />
+            Featured Plan
+          </label>
+
+          <label className="grid gap-2 text-sm font-bold text-plum md:col-span-2">
+            Features, comma separated
+            <textarea
+              name="features"
+              rows={4}
+              placeholder="Initial assessment, Yoga sessions, Progress tracking"
+              className="rounded-2xl border border-petal bg-blush px-4 py-3 text-sm outline-none focus:border-saffron"
+            />
+          </label>
+        </div>
+
+        <button className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-plum px-5 py-3 text-sm font-bold text-white">
+          Add Plan
+        </button>
+      </form>
+
+      <div className="mt-7 grid gap-5">
+        {plans.map((plan, index) => (
+          <form
+            key={`${plan.name}-${index}`}
+            onSubmit={(event) => {
+              event.preventDefault();
+
+              const form = event.currentTarget;
+              const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+
+              updatePlan(index, {
+                name: data.name,
+                price: data.price,
+                priceLabel: data.priceLabel,
+                featured: data.featured === "on",
+                features: data.features
+                  .split(",")
+                  .map((feature) => feature.trim())
+                  .filter(Boolean)
+              });
+            }}
+            className="rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Plan Name" name="name" value={plan.name} />
+              <Field label="Price" name="price" value={plan.price} />
+              <Field label="Price Label" name="priceLabel" value={plan.priceLabel} />
+
+              <label className="flex items-center gap-3 rounded-2xl border border-petal bg-blush px-4 py-3 text-sm font-bold text-plum">
+                <input type="checkbox" name="featured" defaultChecked={plan.featured} />
+                Featured Plan
+              </label>
+
+              <label className="grid gap-2 text-sm font-bold text-plum md:col-span-2">
+                Features, comma separated
+                <textarea
+                  name="features"
+                  rows={4}
+                  defaultValue={plan.features.join(", ")}
+                  className="rounded-2xl border border-petal bg-blush px-4 py-3 text-sm outline-none focus:border-saffron"
+                />
+              </label>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button className="inline-flex flex-1 items-center justify-center rounded-full bg-saffron px-5 py-3 text-sm font-bold text-white">
+                Save Plan
+              </button>
+
+              <button
+                type="button"
+                onClick={() => removePlan(index)}
+                className="inline-flex flex-1 items-center justify-center rounded-full bg-red-50 px-5 py-3 text-sm font-bold text-red-600"
+              >
+                Delete Plan
+              </button>
+            </div>
+          </form>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function AdminDashboard() {
   const [email, setEmail] = useState("");
@@ -1762,6 +1939,9 @@ export function AdminDashboard() {
   removeGalleryImage,
   removeWorkshop,
   removeBlog,
+  addPlan,
+  updatePlan,
+  removePlan,
   resetContent
   } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
@@ -1873,6 +2053,12 @@ export function AdminDashboard() {
           resetContent={resetContent}
         />
         <ServicesManager services={content.services} addService={addService} removeService={removeService} />
+        <PlansManager
+          plans={content.plans}
+          addPlan={addPlan}
+          updatePlan={updatePlan}
+          removePlan={removePlan}
+        />
         <AdminContentManager
   content={content}
   addItem={addItem}

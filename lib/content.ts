@@ -97,19 +97,22 @@ export const services = [
 export const plans = [
   {
     name: "Basic Wellness Plan",
-    price: "Assessment Led",
+    price: "2999",
+    priceLabel: "Assessment Led",
     featured: false,
     features: ["Initial assessment", "Yoga sessions", "Progress tracking"]
   },
   {
     name: "Pain Relief Program",
-    price: "Recovery Focus",
+    price: "4999",
+    priceLabel: "Assessment Led",
     featured: true,
     features: ["Physiotherapy", "Corrective exercises", "Recovery monitoring", "Patient education"]
   },
   {
     name: "Complete Healing Program",
-    price: "Integrated Care",
+    price: "7999",
+    priceLabel: "Integrated Care",
     featured: false,
     features: ["Yoga therapy", "Physiotherapy", "Lifestyle guidance", "Breath and posture work"]
   }
