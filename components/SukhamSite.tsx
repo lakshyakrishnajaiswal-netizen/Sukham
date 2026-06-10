@@ -42,6 +42,7 @@ type SiteContent = {
   workshops: typeof workshops;
   blogs: typeof blogs;
   gallery: typeof gallery;
+  services: typeof services;
 };
 
 type AppointmentStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
@@ -65,7 +66,8 @@ const defaultContent: SiteContent = {
   experts,
   workshops,
   blogs,
-  gallery
+  gallery,
+  services
 };
 
 function useEditableContent() {
@@ -102,13 +104,27 @@ function useEditableContent() {
     next.experts[index] = { ...next.experts[index], ...fields };
     commit(next);
   }
+  function addService(service: string) {
+    const cleanService = service.trim();
 
+    if (!cleanService) return;
+
+    const next = structuredClone(content) as SiteContent;
+    next.services = [cleanService, ...next.services];
+    commit(next);
+  }
+
+  function removeService(index: number) {
+    const next = structuredClone(content) as SiteContent;
+    next.services = next.services.filter((_, serviceIndex) => serviceIndex !== index);
+    commit(next);
+  }
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
   }
 
-  return { content, updateImage, addItem, updateExpert, resetContent };
+  return { content, updateImage, addItem, updateExpert, addService, removeService, resetContent };
 }
 
 function readImageFile(file: File) {
@@ -443,13 +459,13 @@ function Experts({ items }: { items: typeof experts }) {
   );
 }
 
-function Services() {
+function Services({ items }: { items: string[] }) {
   return (
     <section id="services" className="bg-white/54 py-20">
       <div className="section-shell">
         <SectionHeading eyebrow="Services" title="Root-cause care across yoga, physiotherapy and wellness" />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {services.map((service) => (
+          {items.map((service) => (
             <div key={service} className="rounded-2xl border border-petal bg-white px-4 py-4 text-sm font-bold text-plum shadow-sm">
               {service}
             </div>
@@ -626,7 +642,7 @@ function LocateCentre() {
   );
 }
 
-function Appointment() {
+function Appointment({ servicesList }: { servicesList: string[] }) {
   const [status, setStatus] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -666,7 +682,7 @@ function Appointment() {
             Service
             <select required name="service" className="rounded-2xl border border-petal bg-blush px-4 py-3 outline-none focus:border-saffron">
               <option value="">Select service</option>
-              {services.slice(0, 10).map((service) => <option key={service}>{service}</option>)}
+              {servicesList.map((service) => <option key={service}>{service}</option>)}
             </select>
           </label>
           <label className="grid gap-2 text-sm font-bold text-plum">
@@ -742,14 +758,14 @@ export function SukhamSite() {
         <Hero slides={content.heroSlides} />
         <Reviews items={content.reviews} />
         <Experts items={content.experts} />
-        <Services />
+        <Services items={content.services} />
         <Plans />
         <WorkshopsAndBlogs items={content.workshops} />
         <Blogs items={content.blogs} />
         <Gallery images={content.gallery} />
         <WhatsappQuestion />
         <LocateCentre />
-        <Appointment />
+        <Appointment servicesList={content.services} />
       </main>
       <Footer />
       <WhatsappFloating />
@@ -1238,12 +1254,81 @@ function AppointmentReviewSection({
   );
 }
 
+function ServicesManager({
+  services,
+  addService,
+  removeService
+}: {
+  services: string[];
+  addService: (service: string) => void;
+  removeService: (index: number) => void;
+}) {
+  const [newService, setNewService] = useState("");
+
+  return (
+    <section className="soft-card mb-8 rounded-sukham p-6">
+      <p className="text-sm font-bold uppercase text-saffron">Services Manager</p>
+      <h2 className="mt-1 font-serif text-4xl font-bold text-plum">Edit services</h2>
+      <p className="mt-3 max-w-2xl leading-7 text-ink/68">
+        Add or remove services shown on the homepage and appointment form.
+      </p>
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          addService(newService);
+          setNewService("");
+        }}
+        className="mt-6 flex flex-col gap-3 md:flex-row"
+      >
+        <input
+          value={newService}
+          onChange={(event) => setNewService(event.target.value)}
+          placeholder="Add new service"
+          className="h-12 flex-1 rounded-full border border-petal bg-white px-5 text-sm outline-none focus:border-saffron"
+        />
+
+        <button className="inline-flex items-center justify-center rounded-full bg-plum px-6 py-3 text-sm font-bold text-white">
+          Add Service
+        </button>
+      </form>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {services.map((service, index) => (
+          <div
+            key={`${service}-${index}`}
+            className="flex items-center justify-between gap-3 rounded-2xl border border-petal bg-white px-4 py-3"
+          >
+            <span className="text-sm font-bold text-plum">{service}</span>
+
+            <button
+              type="button"
+              onClick={() => removeService(index)}
+              className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600"
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function AdminDashboard() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
-  const { content, updateImage, addItem, updateExpert, resetContent } = useEditableContent();
+  const {
+  content,
+  updateImage,
+  addItem,
+  updateExpert,
+  addService,
+  removeService,
+  resetContent
+  } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
   const [appointmentSearch, setAppointmentSearch] = useState("");
   const modules = useMemo(() => [
@@ -1277,11 +1362,14 @@ export function AdminDashboard() {
             return;
           }
 
-          if (data.user?.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+          const userEmail = data.user?.email?.trim().toLowerCase();
+          const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim().toLowerCase();
+
+          if (userEmail !== adminEmail) {
             await supabaseBrowser.auth.signOut();
             setAuthError("This email is not allowed as admin.");
             return;
-          }
+        }
 
           setAuthenticated(true);
 }}
@@ -1301,6 +1389,11 @@ export function AdminDashboard() {
             <button className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-plum px-5 py-3 text-sm font-bold text-white">
               Login to Dashboard
             </button>
+            {authError && (
+              <p className="mt-4 text-sm font-semibold text-red-600">
+                {authError}
+              </p>
+              )}
             <p className="mt-4 text-xs leading-5 text-ink/58">Prototype login. Replace with Supabase Auth middleware and admin roles for production.</p>
           </form>
         </main>
@@ -1334,6 +1427,7 @@ export function AdminDashboard() {
           </div>
         </div>
         <ImageManager content={content} updateImage={updateImage} resetContent={resetContent} />
+        <ServicesManager services={content.services} addService={addService} removeService={removeService} />
         <AdminContentManager content={content} addItem={addItem} updateExpert={updateExpert} />
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {modules.map(([title, description, count, Icon]) => (
