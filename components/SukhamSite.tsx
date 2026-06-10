@@ -119,12 +119,27 @@ function useEditableContent() {
     next.services = next.services.filter((_, serviceIndex) => serviceIndex !== index);
     commit(next);
   }
+  function addGalleryImage(image: string) {
+    const cleanImage = image.trim();
+
+    if (!cleanImage) return;
+
+    const next = structuredClone(content) as SiteContent;
+    next.gallery = [cleanImage, ...next.gallery];
+    commit(next);
+  }
+
+  function removeGalleryImage(index: number) {
+    const next = structuredClone(content) as SiteContent;
+    next.gallery = next.gallery.filter((_, imageIndex) => imageIndex !== index);
+    commit(next);
+  } 
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
   }
 
-  return { content, updateImage, addItem, updateExpert, addService, removeService, resetContent };
+  return { content, updateImage, addItem, updateExpert, addService, removeService, addGalleryImage, removeGalleryImage, resetContent };
 }
 
 function readImageFile(file: File) {
@@ -828,12 +843,17 @@ function ImageSection({
 function ImageManager({
   content,
   updateImage,
+  addGalleryImage,
+  removeGalleryImage,
   resetContent
 }: {
   content: SiteContent;
   updateImage: (section: keyof SiteContent, index: number, image: string) => void;
+  addGalleryImage: (image: string) => void;
+  removeGalleryImage: (index: number) => void;
   resetContent: () => void;
 }) {
+  const [newGalleryImage, setNewGalleryImage] = useState("");
   return (
     <section className="soft-card mb-8 rounded-sukham p-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -910,13 +930,43 @@ function ImageManager({
       </ImageSection>
 
       <ImageSection title="Gallery">
-        {content.gallery.map((image, index) => (
-          <ImageUploadCard
-            key={`${image}-${index}`}
-            title={`Gallery image ${index + 1}`}
-            image={image}
-            onChange={(nextImage) => updateImage("gallery", index, nextImage)}
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            addGalleryImage(newGalleryImage);
+            setNewGalleryImage("");
+          }}
+          className="rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
+        >
+          <h3 className="font-serif text-xl font-bold text-plum">Add gallery image</h3>
+
+          <input
+            value={newGalleryImage}
+            onChange={(event) => setNewGalleryImage(event.target.value)}
+            placeholder="/images/new-gallery.jpg or Supabase image URL"
+            className="mt-4 h-12 w-full rounded-full border border-petal bg-blush px-5 text-sm outline-none focus:border-saffron"
           />
+
+          <button className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-plum px-5 py-3 text-sm font-bold text-white">
+            Add Image
+          </button>
+        </form>
+        {content.gallery.map((image, index) => (
+          <div key={`${image}-${index}`} className="grid gap-3">
+            <ImageUploadCard
+              title={`Gallery image ${index + 1}`}
+              image={image}
+              onChange={(nextImage) => updateImage("gallery", index, nextImage)}
+            />
+
+            <button
+              type="button"
+              onClick={() => removeGalleryImage(index)}
+              className="rounded-full bg-red-50 px-4 py-2 text-xs font-bold text-red-600"
+            >
+              Remove Gallery Image
+            </button>
+          </div>
         ))}
       </ImageSection>
     </section>
@@ -1335,23 +1385,15 @@ export function AdminDashboard() {
   updateExpert,
   addService,
   removeService,
+  addGalleryImage,
+  removeGalleryImage,
   resetContent
   } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
   const [appointmentSearch, setAppointmentSearch] = useState("");
   const [appointmentStatusFilter, setAppointmentStatusFilter] =
   useState<"All" | AppointmentStatus>("All");
-  const modules = useMemo(() => [
-    ["Homepage", "Hero images, text and CTA buttons", content.heroSlides.length, Upload],
-    ["Experts", "Profiles, certificates and qualifications", content.experts.length, HeartPulse],
-    ["Plans", "Unlimited pricing plans and featured flag", plans.length, Check],
-    ["Workshops", "Images, schedule and descriptions", content.workshops.length, CalendarCheck],
-    ["Blogs", "Posts, summaries and featured images", content.blogs.length, ArrowRight],
-    ["Gallery", "Upload, delete and reorder photos", content.gallery.length, Upload],
-    ["Reviews", "Client image, rating and testimonial", content.reviews.length, Star],
-    ["Appointments", "Search, export and approve/reject entries", appointments.length, Filter]
-  ] as const, [content, appointments.length]);
-
+  
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-blush">
@@ -1448,26 +1490,16 @@ export function AdminDashboard() {
             </button>
           </div>
         </div>
-        <ImageManager content={content} updateImage={updateImage} resetContent={resetContent} />
+        <ImageManager
+          content={content}
+          updateImage={updateImage}
+          addGalleryImage={addGalleryImage}
+          removeGalleryImage={removeGalleryImage}
+          resetContent={resetContent}
+        />
         <ServicesManager services={content.services} addService={addService} removeService={removeService} />
         <AdminContentManager content={content} addItem={addItem} updateExpert={updateExpert} />
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {modules.map(([title, description, count, Icon]) => (
-            <article key={title} className="soft-card rounded-sukham p-6">
-              <div className="flex items-center justify-between">
-                <div className="grid h-11 w-11 place-items-center rounded-full bg-petal text-plum">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-saffron">{count} items</span>
-              </div>
-              <h2 className="mt-5 font-serif text-2xl font-bold text-plum">{title}</h2>
-              <p className="mt-2 min-h-14 text-sm leading-6 text-ink/68">{description}</p>
-              <button className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-plum px-4 py-3 text-sm font-bold text-white">
-                Manage {title}
-              </button>
-            </article>
-          ))}
-        </div>
+
         <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.72fr]">
           <AppointmentReviewSection
   appointments={appointments}
