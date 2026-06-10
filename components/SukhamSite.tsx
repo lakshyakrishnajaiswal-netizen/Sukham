@@ -853,7 +853,7 @@ function ImageManager({
   removeGalleryImage: (index: number) => void;
   resetContent: () => void;
 }) {
-  const [newGalleryImage, setNewGalleryImage] = useState("");
+
   return (
     <section className="soft-card mb-8 rounded-sukham p-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -931,22 +931,28 @@ function ImageManager({
 
       <ImageSection title="Gallery">
         <form
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
-            addGalleryImage(newGalleryImage);
-            setNewGalleryImage("");
+
+            const form = event.currentTarget;
+            const fileInput = form.elements.namedItem("gallery_file") as HTMLInputElement;
+            const imageFile = fileInput.files?.[0];
+
+            if (!imageFile) return;
+
+            addGalleryImage(await readImageFile(imageFile));
+            form.reset();
           }}
           className="rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
         >
           <h3 className="font-serif text-xl font-bold text-plum">Add gallery image</h3>
 
           <input
-            value={newGalleryImage}
-            onChange={(event) => setNewGalleryImage(event.target.value)}
-            placeholder="/images/new-gallery.jpg or Supabase image URL"
+            name="gallery_file"
+            type="file"
+            accept="image/*"
             className="mt-4 h-12 w-full rounded-full border border-petal bg-blush px-5 text-sm outline-none focus:border-saffron"
-          />
-
+           />
           <button className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-plum px-5 py-3 text-sm font-bold text-white">
             Add Image
           </button>
@@ -990,13 +996,43 @@ function TextAreaField({ label, name, value, placeholder }: { label: string; nam
     </label>
   );
 }
+function ImageFileField({ label }: { label: string }) {
+  return (
+    <label className="grid gap-2 text-sm font-bold text-plum">
+      {label}
+      <input
+        name="image_file"
+        type="file"
+        accept="image/*"
+        className="rounded-2xl border border-petal bg-white px-4 py-3 text-sm outline-none focus:border-saffron"
+      />
+    </label>
+  );
+}
 
-function FormPanel({ title, children, onSubmit }: { title: string; children: React.ReactNode; onSubmit: (form: HTMLFormElement) => void }) {
+async function getUploadedImage(form: HTMLFormElement, fallbackImage: string) {
+  const fileInput = form.elements.namedItem("image_file") as HTMLInputElement;
+  const imageFile = fileInput.files?.[0];
+
+  if (!imageFile) return fallbackImage;
+
+  return readImageFile(imageFile);
+}
+
+function FormPanel({
+  title,
+  children,
+  onSubmit
+}: {
+  title: string;
+  children: React.ReactNode;
+  onSubmit: (form: HTMLFormElement) => void | Promise<void>;
+}) {
   return (
     <form
-      onSubmit={(event) => {
+      onSubmit={async(event) => {
         event.preventDefault();
-        onSubmit(event.currentTarget);
+        await onSubmit(event.currentTarget);
         event.currentTarget.reset();
       }}
       className="rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
@@ -1029,7 +1065,7 @@ function AdminContentManager({
       <div className="mt-7 grid gap-5 lg:grid-cols-2">
         <FormPanel
           title="Add Workshop"
-          onSubmit={(form) => {
+          onSubmit={async(form) => {
             const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
             addItem("workshops", {
               title: data.title || "New Workshop",
@@ -1037,7 +1073,10 @@ function AdminContentManager({
               time: data.time || "To be announced",
               location: data.location || brand.area,
               description: data.description || "Workshop details coming soon.",
-              image: data.image || "https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=900&q=85"
+              image: await getUploadedImage(
+                form,
+                "https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=900&q=85"
+              )
             });
           }}
         >
@@ -1045,52 +1084,61 @@ function AdminContentManager({
           <Field label="Date" name="date" placeholder="Every Saturday" />
           <Field label="Time" name="time" placeholder="8:00 AM" />
           <Field label="Location" name="location" value={brand.area} />
-          <Field label="Image URL" name="image" />
+          <ImageFileField label="Workshop Image" />
           <TextAreaField label="Description" name="description" />
         </FormPanel>
 
         <FormPanel
           title="Add Blog"
-          onSubmit={(form) => {
+          onSubmit={async(form) => {
             const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
             addItem("blogs", {
               title: data.title || "New Blog",
               summary: data.summary || "Helpful wellness insight from Sukham.",
-              image: data.image || "https://images.unsplash.com/photo-1593164842264-854604db2260?auto=format&fit=crop&w=900&q=85"
+              image: await getUploadedImage(
+                form,
+                "https://images.unsplash.com/photo-1593164842264-854604db2260?auto=format&fit=crop&w=900&q=85"
+              )
             });
           }}
         >
           <Field label="Title" name="title" />
-          <Field label="Image URL" name="image" />
+          <ImageFileField label="Blog Image" />
           <TextAreaField label="Summary" name="summary" />
         </FormPanel>
 
         <FormPanel
           title="Add Review"
-          onSubmit={(form) => {
+          onSubmit={async(form) => {
             const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
             addItem("reviews", {
               name: data.name || "Sukham Client",
               rating: Number(data.rating || 5),
-              image: data.image || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
-              review: data.review || "A warm and professional healing experience."
+              image: await getUploadedImage(
+                form,
+                "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80"
+              )
+              ,review: data.review || "A warm and professional healing experience."
             });
           }}
         >
           <Field label="Client Name" name="name" />
           <Field label="Rating" name="rating" type="number" value="5" />
-          <Field label="Client Image URL" name="image" />
+          <ImageFileField label="Client Image" />
           <TextAreaField label="Review" name="review" />
         </FormPanel>
 
         <FormPanel
           title="Add Expert"
-          onSubmit={(form) => {
+          onSubmit={async(form) => {
             const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
             addItem("experts", {
               name: data.name || "New Expert",
               role: data.role || "Sukham Wellness Expert",
-              image: data.image || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=900&q=85",
+              image: await getUploadedImage(
+                form,
+                "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=900&q=85"
+              ),
               bio: data.bio || "Expert profile details coming soon.",
               details: (data.details || "Therapeutic care,Personal guidance").split(",").map((item) => item.trim()).filter(Boolean),
               certificates: (data.certificates || "Certification").split(",").map((item) => item.trim()).filter(Boolean)
@@ -1099,7 +1147,7 @@ function AdminContentManager({
         >
           <Field label="Name" name="name" />
           <Field label="Role / Qualification" name="role" />
-          <Field label="Image URL" name="image" />
+          <ImageFileField label="Expert Image" />
           <TextAreaField label="Bio" name="bio" />
           <TextAreaField label="Specializations, comma separated" name="details" />
           <TextAreaField label="Certificates, comma separated" name="certificates" />
