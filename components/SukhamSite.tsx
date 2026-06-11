@@ -44,6 +44,7 @@ type SiteContent = {
   gallery: typeof gallery;
   services: typeof services;
   plans: typeof plans;
+  certificates: string[];
 };
 
 type AppointmentStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
@@ -69,7 +70,8 @@ const defaultContent: SiteContent = {
   blogs,
   gallery,
   services,
-  plans
+  plans,
+  certificates: []
 };
 
 function useEditableContent() {
@@ -171,13 +173,44 @@ function removeBlog(index: number) {
     next.plans = next.plans.filter((_, planIndex) => planIndex !== index);
     commit(next);
   }
+  function addCertificate(image: string) {
+    const cleanImage = image.trim();
 
+    if (!cleanImage) return;
+
+    const next = structuredClone(content) as SiteContent;
+    next.certificates = [cleanImage, ...next.certificates];
+    commit(next);
+  }
+
+  function removeCertificate(index: number) {
+    const next = structuredClone(content) as SiteContent;
+    next.certificates = next.certificates.filter((_, certificateIndex) => certificateIndex !== index);
+    commit(next);
+  }
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
   }
 
-  return { content, updateImage, addItem, updateExpert, addService, removeService, addGalleryImage, removeGalleryImage, removeWorkshop, removeBlog, resetContent, addPlan, updatePlan, removePlan };
+  return {
+    content,
+    updateImage,
+    addItem,
+    updateExpert,
+    addService,
+    removeService,
+    addGalleryImage,
+    removeGalleryImage,
+    removeWorkshop,
+    removeBlog,
+    addPlan,
+    updatePlan,
+    removePlan,
+    addCertificate,
+    removeCertificate,
+    resetContent
+  };
 }
 async function uploadImageFile(file: File, bucket = "gallery") {
   const formData = new FormData();
@@ -681,6 +714,72 @@ function Experts({ items }: { items: typeof experts }) {
     </section>
   );
 }
+function Certificates({ images }: { images: string[] }) {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  if (images.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="certificates" className="bg-white/58 py-24">
+      <div className="section-shell">
+        <SectionHeading
+          eyebrow="Certificates"
+          title="Credentials, training and trusted expertise"
+          copy="A transparent look at Sukham's professional certifications and learning milestones."
+        />
+
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          {images.map((image, index) => (
+            <button
+              key={`${image}-${index}`}
+              onClick={() => setSelected(image)}
+              className="relative h-64 overflow-hidden rounded-sukham border border-gold/20 bg-white shadow-sm md:h-80"
+            >
+              <Image
+                src={image}
+                alt={`Sukham certificate ${index + 1}`}
+                fill
+                className="object-contain p-3 transition duration-500 hover:scale-105"
+                unoptimized={image.startsWith("data:")}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            className="fixed inset-0 z-[90] grid place-items-center bg-plum/82 p-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <button
+              aria-label="Close certificate image"
+              onClick={() => setSelected(null)}
+              className="absolute right-5 top-5 grid h-11 w-11 place-items-center rounded-full bg-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="relative h-[82vh] w-full max-w-4xl overflow-hidden rounded-sukham bg-white">
+              <Image
+                src={selected}
+                alt="Selected Sukham certificate"
+                fill
+                className="object-contain p-5"
+                unoptimized={selected.startsWith("data:")}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
 
 function Services({ items }: { items: string[] }) {
   return (
@@ -1023,6 +1122,7 @@ export function SukhamSite() {
         <Reviews items={content.reviews} />
         <SukhamPhilosophy />
         <Experts items={content.experts} />
+        <Certificates images={content.certificates} />
         <Services items={content.services} />
         <Plans items={content.plans} />
         <WorkshopsAndBlogs items={content.workshops} />
@@ -1922,6 +2022,91 @@ function PlansManager({
     </section>
   );
 }
+function CertificatesManager({
+  certificates,
+  addCertificate,
+  removeCertificate
+}: {
+  certificates: string[];
+  addCertificate: (image: string) => void;
+  removeCertificate: (index: number) => void;
+}) {
+  const [certificateUrl, setCertificateUrl] = useState("");
+
+  return (
+    <section className="soft-card mb-8 rounded-sukham p-6">
+      <p className="text-sm font-bold uppercase text-saffron">Certificates Manager</p>
+
+      <h2 className="mt-1 font-serif text-4xl font-bold text-plum">
+        Edit certificates
+      </h2>
+
+      <p className="mt-3 max-w-2xl leading-7 text-ink/68">
+        Add certificate images using Supabase public URLs. These appear on the homepage after the experts section.
+      </p>
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+
+          addCertificate(certificateUrl);
+          setCertificateUrl("");
+        }}
+        className="mt-6 rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
+      >
+        <h3 className="font-serif text-2xl font-bold text-plum">
+          Add Certificate
+        </h3>
+
+        <input
+          value={certificateUrl}
+          onChange={(event) => setCertificateUrl(event.target.value)}
+          placeholder="Paste Supabase certificate image URL"
+          className="mt-4 h-12 w-full rounded-full border border-petal bg-blush px-5 text-sm outline-none focus:border-saffron"
+        />
+
+        <button className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-plum px-5 py-3 text-sm font-bold text-white">
+          Add Certificate
+        </button>
+      </form>
+
+      <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {certificates.map((certificate, index) => (
+          <article
+            key={`${certificate}-${index}`}
+            className="overflow-hidden rounded-sukham border border-gold/20 bg-white shadow-sm"
+          >
+            <div className="relative h-64 bg-blush">
+              <Image
+                src={certificate}
+                alt={`Certificate ${index + 1}`}
+                fill
+                className="object-contain p-3"
+                unoptimized={certificate.startsWith("data:")}
+              />
+            </div>
+
+            <div className="p-4">
+              <button
+                type="button"
+                onClick={() => removeCertificate(index)}
+                className="inline-flex w-full items-center justify-center rounded-full bg-red-50 px-4 py-2 text-xs font-bold text-red-600"
+              >
+                Remove Certificate
+              </button>
+            </div>
+          </article>
+        ))}
+
+        {certificates.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-gold/30 bg-white px-5 py-8 text-center text-sm font-semibold text-ink/55">
+            No certificates added yet.
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
 
 export function AdminDashboard() {
   const [email, setEmail] = useState("");
@@ -1942,6 +2127,8 @@ export function AdminDashboard() {
   addPlan,
   updatePlan,
   removePlan,
+  addCertificate,
+  removeCertificate,
   resetContent
   } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
@@ -2051,6 +2238,11 @@ export function AdminDashboard() {
           addGalleryImage={addGalleryImage}
           removeGalleryImage={removeGalleryImage}
           resetContent={resetContent}
+        />
+        <CertificatesManager
+          certificates={content.certificates}
+          addCertificate={addCertificate}
+          removeCertificate={removeCertificate}
         />
         <ServicesManager services={content.services} addService={addService} removeService={removeService} />
         <PlansManager
