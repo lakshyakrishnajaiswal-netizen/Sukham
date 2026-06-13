@@ -41,7 +41,13 @@ const socialLinks = {
   twitter: "https://x.com/SukhamCentre"
 };
 const STORAGE_KEY = "sukham-site-content-v1";
+type ServiceItem = {
+  title: string;
+  image: string;
+};
 
+const defaultServiceImage =
+  "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=900&q=85";
 type SiteContent = {
   heroSlides: typeof heroSlides;
   reviews: typeof reviews;
@@ -49,7 +55,7 @@ type SiteContent = {
   workshops: typeof workshops;
   blogs: typeof blogs;
   gallery: typeof gallery;
-  services: typeof services;
+  services: ServiceItem[];
   plans: typeof plans;
   certificates: string[];
 };
@@ -76,7 +82,10 @@ const defaultContent: SiteContent = {
   workshops,
   blogs,
   gallery,
-  services,
+  services: services.map((service) => ({
+    title: service,
+    image: defaultServiceImage
+  })),
   plans,
   certificates: []
 };
@@ -87,13 +96,21 @@ function useEditableContent() {
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved) {
-  try {
-    setContent({ ...defaultContent, ...JSON.parse(saved) });
-  } catch {
-    window.localStorage.removeItem(STORAGE_KEY);
-    setContent(defaultContent);
-  }
-};
+    try {
+      const parsed = { ...defaultContent, ...JSON.parse(saved) };
+
+      parsed.services = parsed.services.map((service: string | ServiceItem) =>
+        typeof service === "string"
+          ? { title: service, image: defaultServiceImage }
+          : service
+      );
+
+      setContent(parsed);
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY);
+      setContent(defaultContent);
+    }
+  };
   }, []);
 
   function commit(next: SiteContent) {
@@ -122,13 +139,20 @@ function useEditableContent() {
     next.experts[index] = { ...next.experts[index], ...fields };
     commit(next);
   }
-  function addService(service: string) {
+  function addService(service: string, image: string) {
     const cleanService = service.trim();
+    const cleanImage = image.trim();
 
     if (!cleanService) return;
 
     const next = structuredClone(content) as SiteContent;
-    next.services = [cleanService, ...next.services];
+    next.services = [
+      {
+        title: cleanService,
+        image: cleanImage || defaultServiceImage
+      },
+      ...next.services
+    ];
     commit(next);
   }
 
@@ -195,6 +219,14 @@ function removeBlog(index: number) {
     next.certificates = next.certificates.filter((_, certificateIndex) => certificateIndex !== index);
     commit(next);
   }
+  function updateService(index: number, fields: Partial<ServiceItem>) {
+    const next = structuredClone(content) as SiteContent;
+    next.services[index] = {
+      ...next.services[index],
+      ...fields
+    };
+    commit(next);
+  }
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
@@ -206,6 +238,7 @@ function removeBlog(index: number) {
     addItem,
     updateExpert,
     addService,
+    updateService,
     removeService,
     addGalleryImage,
     removeGalleryImage,
@@ -548,17 +581,32 @@ function SukhamPhilosophy() {
     {
       title: "Yoga",
       copy:
-        "Yoga means union. Its practice integrates physical, mental and spiritual energies that together enhance health and wellbeing."
+        "Yoga is the science of harmony between body, mind and breath. Through mindful movement, postures and awareness, it enhances strength, flexibility, inner balance and overall wellbeing."
     },
     {
       title: "Physiotherapy",
       copy:
-        "Physiotherapy is a holistic approach addressing physical, emotional, psychological and social aspects to rehabilitate, strengthen and maintain physical health."
+        "Physiotherapy restores movement, reduces pain and improves physical function through evidence-based rehabilitation, helping individuals recover, strengthen and live more actively."
     },
     {
       title: "Nutrition",
       copy:
-        "Nutrition supports healing, energy, recovery and long-term balance by aligning daily nourishment with body needs and lifestyle goals."
+        "Nutrition forms the foundation of health and vitality. Personalized dietary guidance supports healing, energy, disease prevention and sustainable lifestyle transformation."
+    },
+    {
+      title: "Ayurveda",
+      copy:
+        "Ayurveda is India's ancient system of holistic healing that promotes balance through personalized nutrition, lifestyle practices and natural therapies, supporting long-term health and wellness."
+    },
+    {
+      title: "Internal Medicine",
+      copy:
+        "Internal Medicine focuses on the prevention, diagnosis and management of adult health conditions. Through comprehensive medical care, it supports overall health, early detection and long-term wellbeing."
+    },
+    {
+      title: "Psychological Counselling",
+      copy:
+        "Psychological support nurtures emotional resilience and mental wellbeing. Through professional guidance and therapeutic interventions, individuals can better manage stress, improve relationships and achieve personal growth."
     }
   ];
 
@@ -625,15 +673,24 @@ function SukhamPhilosophy() {
             </h3>
 
             <p className="mt-4 leading-8 text-ink/72">
-              Sukham is grounded on the principles of ancient wisdom with the integrity of modern
-              intelligence through yoga, physiotherapy and nutrition.
+              Sukham is grounded on the principles of ancient wisdom with the integrity of modern intelligence,
+              bringing together yoga, physiotherapy, nutrition, Ayurveda, internal medicine and psychological
+              counselling for holistic wellbeing.
             </p>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="mt-8 grid gap-5 md:grid-cols-2">
               {pillars.map((pillar) => (
-                <article key={pillar.title} className="rounded-2xl border border-petal bg-blush p-5">
-                  <h4 className="font-serif text-2xl font-bold text-plum">{pillar.title}</h4>
-                  <p className="mt-3 text-sm leading-6 text-ink/68">{pillar.copy}</p>
+                <article
+                  key={pillar.title}
+                  className="flex min-h-[220px] flex-col items-center justify-center rounded-sukham border border-petal bg-blush px-7 py-8 text-center shadow-sm"
+                >
+                  <h4 className="font-serif text-3xl font-bold leading-tight text-plum">
+                    {pillar.title}
+                  </h4>
+
+                  <p className="mt-4 max-w-md text-base leading-8 text-ink/72">
+                    {pillar.copy}
+                  </p>
                 </article>
               ))}
             </div>
@@ -646,7 +703,7 @@ function SukhamPhilosophy() {
             <InfoList title="Our Mission" items={missions} />
           </div>
 
-          <div className="soft-card rounded-sukham p-7">
+          <div className="soft-card rounded-sukham p-6 md:p-8">
             <p className="text-sm font-bold uppercase text-saffron">Sukham's Vision</p>
 
             <h3 className="mt-2 font-serif text-3xl font-bold text-plum">
@@ -788,16 +845,37 @@ function Certificates({ images }: { images: string[] }) {
   );
 }
 
-function Services({ items }: { items: string[] }) {
+function Services({ items }: { items: ServiceItem[] }) {
   return (
     <section id="services" className="bg-white/54 py-20">
       <div className="section-shell">
-        <SectionHeading eyebrow="Services" title="Root-cause care across yoga, physiotherapy and wellness" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <SectionHeading
+          eyebrow="Services"
+          title="Root-cause care across yoga, physiotherapy and wellness"
+        />
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
           {items.map((service) => (
-            <div key={service} className="rounded-2xl border border-petal bg-white px-4 py-4 text-sm font-bold text-plum shadow-sm">
-              {service}
-            </div>
+            <article
+              key={service.title}
+              className="overflow-hidden rounded-sukham border border-petal bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-wellness"
+            >
+              <div className="relative h-36 bg-blush">
+                <Image
+                  src={service.image}
+                  alt={service.title}
+                  fill
+                  className="object-cover"
+                  unoptimized={service.image.startsWith("data:")}
+                />
+              </div>
+
+              <div className="flex min-h-20 items-center justify-center px-4 py-4 text-center">
+                <h3 className="text-sm font-bold leading-6 text-plum">
+                  {service.title}
+                </h3>
+              </div>
+            </article>
           ))}
         </div>
       </div>
@@ -997,7 +1075,7 @@ function LocateCentre() {
   );
 }
 
-function Appointment({ servicesList }: { servicesList: string[] }) {
+function Appointment({ servicesList }: { servicesList: ServiceItem[] }) {
   const [status, setStatus] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1037,7 +1115,9 @@ function Appointment({ servicesList }: { servicesList: string[] }) {
             Service
             <select required name="service" className="rounded-2xl border border-petal bg-blush px-4 py-3 outline-none focus:border-saffron">
               <option value="">Select service</option>
-              {servicesList.map((service) => <option key={service}>{service}</option>)}
+              {servicesList.map((service) => (
+                <option key={service.title}>{service.title}</option>
+              ))}
             </select>
           </label>
           <label className="grid gap-2 text-sm font-bold text-plum">
@@ -1885,13 +1965,16 @@ function AppointmentReviewSection({
 function ServicesManager({
   services,
   addService,
+  updateService,
   removeService
 }: {
-  services: string[];
-  addService: (service: string) => void;
+  services: ServiceItem[];
+  addService: (service: string, image: string) => void;
+  updateService: (index: number, fields: Partial<ServiceItem>) => void;
   removeService: (index: number) => void;
 }) {
   const [newService, setNewService] = useState("");
+  const [newServiceImage, setNewServiceImage] = useState("");
 
   return (
     <section className="soft-card mb-8 rounded-sukham p-6">
@@ -1904,16 +1987,24 @@ function ServicesManager({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          addService(newService);
+          addService(newService, newServiceImage);
           setNewService("");
+          setNewServiceImage("");
         }}
-        className="mt-6 flex flex-col gap-3 md:flex-row"
+        className="mt-6 grid gap-3 md:grid-cols-[1fr_1fr_auto]"
       >
         <input
           value={newService}
           onChange={(event) => setNewService(event.target.value)}
           placeholder="Add new service"
-          className="h-12 flex-1 rounded-full border border-petal bg-white px-5 text-sm outline-none focus:border-saffron"
+          className="h-12 rounded-full border border-petal bg-white px-5 text-sm outline-none focus:border-saffron"
+        />
+
+        <input
+          value={newServiceImage}
+          onChange={(event) => setNewServiceImage(event.target.value)}
+          placeholder="Paste Supabase service image URL"
+          className="h-12 rounded-full border border-petal bg-white px-5 text-sm outline-none focus:border-saffron"
         />
 
         <button className="inline-flex items-center justify-center rounded-full bg-plum px-6 py-3 text-sm font-bold text-white">
@@ -1921,22 +2012,45 @@ function ServicesManager({
         </button>
       </form>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {services.map((service, index) => (
-          <div
-            key={`${service}-${index}`}
-            className="flex items-center justify-between gap-3 rounded-2xl border border-petal bg-white px-4 py-3"
+          <article
+            key={`${service.title}-${index}`}
+            className="rounded-sukham border border-petal bg-white p-4 shadow-sm"
           >
-            <span className="text-sm font-bold text-plum">{service}</span>
+            <div className="relative h-40 overflow-hidden rounded-2xl bg-blush">
+              <Image
+                src={service.image}
+                alt={service.title}
+                fill
+                className="object-cover"
+                unoptimized={service.image.startsWith("data:")}
+              />
+            </div>
 
-            <button
-              type="button"
-              onClick={() => removeService(index)}
-              className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600"
-            >
-              Remove
-            </button>
-          </div>
+            <div className="mt-4 grid gap-3">
+              <input
+                value={service.title}
+                onChange={(event) => updateService(index, { title: event.target.value })}
+                className="h-11 rounded-full border border-petal bg-blush px-4 text-sm font-bold text-plum outline-none focus:border-saffron"
+              />
+
+              <input
+                value={service.image}
+                onChange={(event) => updateService(index, { image: event.target.value })}
+                placeholder="Supabase image URL"
+                className="h-11 rounded-full border border-petal bg-blush px-4 text-xs outline-none focus:border-saffron"
+              />
+
+              <button
+                type="button"
+                onClick={() => removeService(index)}
+                className="rounded-full bg-red-50 px-3 py-2 text-xs font-bold text-red-600"
+              >
+                Remove Service
+              </button>
+            </div>
+          </article>
         ))}
       </div>
     </section>
@@ -2171,6 +2285,7 @@ export function AdminDashboard() {
   addItem,
   updateExpert,
   addService,
+  updateService,
   removeService,
   addGalleryImage,
   removeGalleryImage,
@@ -2296,7 +2411,12 @@ export function AdminDashboard() {
           addCertificate={addCertificate}
           removeCertificate={removeCertificate}
         />
-        <ServicesManager services={content.services} addService={addService} removeService={removeService} />
+        <ServicesManager
+          services={content.services}
+          addService={addService}
+          updateService={updateService}
+          removeService={removeService}
+        />
         <PlansManager
           plans={content.plans}
           addPlan={addPlan}
