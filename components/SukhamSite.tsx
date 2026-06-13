@@ -10,6 +10,7 @@ import {
   Clock,
   Download,
   Facebook,
+  Twitter,
   Filter,
   HeartPulse,
   Instagram,
@@ -33,6 +34,12 @@ import { Logo } from "@/components/Logo";
 import { blogs, brand, experts, gallery, heroSlides, plans, reviews, services, workshops } from "@/lib/content";
 
 const nav = ["Home", "Experts", "Plans", "Workshops", "Blogs", "Gallery"];
+const socialLinks = {
+  instagram: "https://www.instagram.com/sukham_yoga_physiotherapy?igsh=NGc3NDNuZXV0d3lo",
+  facebook: "https://www.facebook.com/profile.php?id=61590299987244",
+  youtube: "https://www.youtube.com/@SukhamCentre",
+  twitter: "https://x.com/SukhamCentre"
+};
 const STORAGE_KEY = "sukham-site-content-v1";
 
 type SiteContent = {
@@ -1077,17 +1084,62 @@ function Footer() {
             <span>{brand.address}</span>
           </div>
           <div className="mt-5 flex gap-3 text-plum">
-            <a href={`https://www.instagram.com/${brand.instagram}/`} target="_blank" rel="noreferrer" aria-label="Sukham Instagram">
+            <a
+              href={socialLinks.instagram}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Sukham Instagram"
+              className="grid h-10 w-10 place-items-center rounded-full bg-blush transition hover:bg-petal hover:text-saffron"
+            >
               <Instagram className="h-5 w-5" />
             </a>
-            <a href={`https://www.facebook.com/search/top/?q=${encodeURIComponent(brand.facebook)}`} target="_blank" rel="noreferrer" aria-label="Sukham Facebook">
+
+            <a
+              href={socialLinks.facebook}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Sukham Facebook"
+              className="grid h-10 w-10 place-items-center rounded-full bg-blush transition hover:bg-petal hover:text-saffron"
+            >
               <Facebook className="h-5 w-5" />
             </a>
-            {[Youtube, Linkedin].map((Icon, index) => <Icon key={index} className="h-5 w-5" />)}
+
+            <a
+              href={socialLinks.youtube}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Sukham YouTube"
+              className="grid h-10 w-10 place-items-center rounded-full bg-blush transition hover:bg-petal hover:text-saffron"
+            >
+              <Youtube className="h-5 w-5" />
+            </a>
+
+            <a
+              href={socialLinks.twitter}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Sukham X"
+              className="grid h-10 w-10 place-items-center rounded-full bg-blush transition hover:bg-petal hover:text-saffron"
+            >
+              <Twitter className="h-5 w-5" />
+            </a>
           </div>
           <div className="mt-3 grid gap-1 text-sm font-semibold text-ink/60">
-            <span>Instagram: @{brand.instagram}</span>
-            <span>Facebook: {brand.facebook}</span>
+            <a href={socialLinks.instagram} target="_blank" rel="noreferrer" className="hover:text-saffron">
+              Instagram: @sukham_yoga_physiotherapy
+            </a>
+
+            <a href={socialLinks.facebook} target="_blank" rel="noreferrer" className="hover:text-saffron">
+              Facebook: Sukham Centre
+            </a>
+
+            <a href={socialLinks.youtube} target="_blank" rel="noreferrer" className="hover:text-saffron">
+              YouTube: @SukhamCentre
+            </a>
+
+            <a href={socialLinks.twitter} target="_blank" rel="noreferrer" className="hover:text-saffron">
+              X: @SukhamCentre
+            </a>
           </div>
         </div>
       </div>
