@@ -1,3 +1,5 @@
+import { video } from "framer-motion/client";
+
 export const brand = {
   name: "Sukham",
   subtitle: "Yoga & Physiotherapy Centre",
@@ -14,25 +16,52 @@ export const brand = {
 
 export const heroSlides = [
   {
-    eyebrow: "Holistic Healing",
-    title: "Integrating Yoga & Physiotherapy for Holistic Healing",
-    copy: "Personal assessment, therapeutic movement and recovery protocols designed around your body, goals and long-term wellbeing.",
+    eyebrow: "Yoga Therapy",
+    title: "Balance Body, Mind and Breath",
+    copy:
+      "Therapeutic yoga at Sukham supports strength, flexibility, posture, breath awareness and inner calm through mindful movement.",
     image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=2200&q=85",
-    cta: "Book Appointment"
+    cta: "Explore Yoga"
   },
   {
-    eyebrow: "Evidence Meets Calm",
-    title: "Where Rehabilitation Meets Wellness",
-    copy: "Orthopedic, neurological and sports rehabilitation supported by yoga therapy, breath training and lifestyle guidance.",
+    eyebrow: "Physiotherapy",
+    title: "Restore Movement and Reduce Pain",
+    copy:
+      "Evidence-based physiotherapy helps improve mobility, strength and function while addressing pain from the root cause.",
     image: "https://images.unsplash.com/photo-1571019613914-85f342c6a11e?auto=format&fit=crop&w=2200&q=85",
-    cta: "Explore Services"
+    cta: "Explore Physio"
   },
   {
-    eyebrow: "Premium Recovery",
-    title: "Move Better. Heal Better. Live Better.",
-    copy: "One-on-one care, progress tracking and gentle accountability for pain relief, mobility, posture and everyday confidence.",
-    image: "https://images.unsplash.com/photo-1600881333168-2ef49b341f30?auto=format&fit=crop&w=2200&q=85",
-    cta: "Meet Experts"
+    eyebrow: "Ayurveda",
+    title: "Ancient Wisdom for Natural Balance",
+    copy:
+      "Ayurveda supports long-term wellness through personalized lifestyle practices, natural healing principles and body-type awareness.",
+    image: "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=2200&q=85",
+    cta: "Explore Ayurveda"
+  },
+  {
+    eyebrow: "Internal Medicine",
+    title: "Comprehensive Care for Everyday Health",
+    copy:
+      "Internal medicine focuses on prevention, diagnosis and management of adult health concerns with careful medical guidance.",
+    image: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=2200&q=85",
+    cta: "Explore Care"
+  },
+  {
+    eyebrow: "Dietetics & Nutrition",
+    title: "Nourishment That Supports Healing",
+    copy:
+      "Personalized nutrition guidance supports recovery, energy, disease prevention and sustainable lifestyle transformation.",
+    image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=2200&q=85",
+    cta: "Explore Nutrition"
+  },
+  {
+    eyebrow: "Psychological Counselling",
+    title: "Support for Emotional Wellbeing",
+    copy:
+      "Professional counselling helps build emotional resilience, manage stress and support personal growth with compassionate guidance.",
+    image: "https://images.unsplash.com/photo-1573497491208-6b1acb260507?auto=format&fit=crop&w=2200&q=85",
+    cta: "Explore Counselling"
   }
 ];
 
@@ -41,19 +70,22 @@ export const reviews = [
     name: "Ananya Rao",
     rating: 5,
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
-    review: "My back pain reduced within weeks. The blend of physiotherapy and yoga made the recovery feel sustainable."
+    review: "My back pain reduced within weeks. The blend of physiotherapy and yoga made the recovery feel sustainable.",
+    video: ""
   },
   {
     name: "Rohit Menon",
     rating: 5,
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
-    review: "Very professional assessment and clear progress tracking. The sessions are calm, focused and personal."
+    review: "Very professional assessment and clear progress tracking. The sessions are calm, focused and personal.",
+    video: ""
   },
   {
     name: "Meera Iyer",
     rating: 5,
     image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80",
-    review: "Sukham helped my mother regain confidence with mobility. The senior citizen yoga plan was thoughtful."
+    review: "Sukham helped my mother regain confidence with mobility. The senior citizen yoga plan was thoughtful.",
+    video: ""
   }
 ];
 

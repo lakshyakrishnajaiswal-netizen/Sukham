@@ -99,6 +99,11 @@ function useEditableContent() {
     try {
       const parsed = { ...defaultContent, ...JSON.parse(saved) };
 
+      parsed.reviews = parsed.reviews.map((review: typeof reviews[number] & { video?: string }) => ({
+        ...review,
+        video: review.video || ""
+      }));
+
       parsed.services = parsed.services.map((service: string | ServiceItem) =>
         typeof service === "string"
           ? { title: service, image: defaultServiceImage }
@@ -227,6 +232,14 @@ function removeBlog(index: number) {
     };
     commit(next);
   }
+  function updateReview(index: number, fields: Partial<SiteContent["reviews"][number]>) {
+    const next = structuredClone(content) as SiteContent;
+    next.reviews[index] = {
+      ...next.reviews[index],
+      ...fields
+    };
+    commit(next);
+  }
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
@@ -249,6 +262,7 @@ function removeBlog(index: number) {
     removePlan,
     addCertificate,
     removeCertificate,
+    updateReview,
     resetContent
   };
 }
@@ -513,7 +527,7 @@ function Hero({ slides }: { slides: typeof heroSlides }) {
           </motion.h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-ink/76">{slide.copy}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="#appointment">{slide.cta}</ButtonLink>
+            <ButtonLink href="#services">{slide.cta}</ButtonLink>
             <a href="#services" className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-plum shadow-sm transition hover:-translate-y-0.5">
               View Services
             </a>
@@ -545,24 +559,90 @@ function SectionHeading({ eyebrow, title, copy }: { eyebrow: string; title: stri
 }
 
 function Reviews({ items }: { items: typeof reviews }) {
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+
   return (
-    <section className="section-shell -mt-16 relative z-20 grid gap-4 md:grid-cols-3">
-      {items.map((review) => (
-        <article key={review.name} className="soft-card rounded-sukham p-6">
-          <div className="flex items-center gap-4">
-            <Image src={review.image} alt={review.name} width={58} height={58} className="h-14 w-14 rounded-full object-cover" />
-            <div>
-              <h3 className="font-bold text-plum">{review.name}</h3>
-              <div className="flex text-gold" aria-label={`${review.rating} star rating`}>
-                {Array.from({ length: review.rating }).map((_, index) => (
-                  <Star key={index} className="h-4 w-4 fill-current" />
-                ))}
+    <section className="section-shell -mt-16 relative z-20">
+      <div className="mb-5">
+        <p className="text-sm font-bold uppercase text-saffron">Reviews & Testimonials</p>
+        <h2 className="font-serif text-4xl font-bold text-plum">Stories of healing and progress</h2>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {items.map((review) => (
+          <article key={review.name} className="soft-card rounded-sukham p-6">
+            <div className="flex items-center gap-4">
+              <Image
+                src={review.image}
+                alt={review.name}
+                width={58}
+                height={58}
+                className="h-14 w-14 rounded-full object-cover"
+                unoptimized={review.image.startsWith("data:")}
+              />
+
+              <div>
+                <h3 className="font-bold text-plum">{review.name}</h3>
+
+                <div className="flex text-gold" aria-label={`${review.rating} star rating`}>
+                  {Array.from({ length: review.rating }).map((_, index) => (
+                    <Star key={index} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          <p className="mt-5 leading-7 text-ink/72">{review.review}</p>
-        </article>
-      ))}
+
+            <p className="mt-5 leading-7 text-ink/72">{review.review}</p>
+
+            {review.video && (
+              <button
+                type="button"
+                onClick={() => setSelectedVideo(review.video)}
+                className="mt-5 flex w-full items-center justify-between rounded-2xl border border-petal bg-blush px-4 py-3 text-left text-sm font-bold text-plum transition hover:border-saffron hover:bg-white"
+              >
+                <span>Watch video testimonial</span>
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-saffron text-white">
+                  ▶
+                </span>
+              </button>
+            )}
+          </article>
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {selectedVideo && (
+          <motion.div
+            className="fixed inset-0 z-[95] grid place-items-center bg-plum/82 p-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <button
+              aria-label="Close testimonial video"
+              onClick={() => setSelectedVideo(null)}
+              className="absolute right-5 top-5 grid h-11 w-11 place-items-center rounded-full bg-white text-plum"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <motion.div
+              initial={{ scale: 0.94, rotate: -1, opacity: 0 }}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+              exit={{ scale: 0.94, rotate: 1, opacity: 0 }}
+              className="w-full max-w-4xl overflow-hidden rounded-sukham bg-black shadow-wellness"
+            >
+              <video
+                src={selectedVideo}
+                controls
+                autoPlay
+                playsInline
+                className="aspect-video w-full"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
@@ -1716,10 +1796,12 @@ function AdminContentManager({
                 "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80"
               )
               ,review: data.review || "A warm and professional healing experience."
+              ,video: data.video || ""
             });
           }}
         >
           <Field label="Supabase Image URL" name="image" />
+          <Field label="Supabase Video URL" name="video" />
           <Field label="Client Name" name="name" />
           <Field label="Rating" name="rating" type="number" value="5" />
           <ImageFileField label="Client Image" />
@@ -2271,6 +2353,43 @@ function CertificatesManager({
     </section>
   );
 }
+function ReviewsManager({
+  reviews,
+  updateReview
+}: {
+  reviews: SiteContent["reviews"];
+  updateReview: (index: number, fields: Partial<SiteContent["reviews"][number]>) => void;
+}) {
+  return (
+    <section className="soft-card mb-8 rounded-sukham p-6">
+      <p className="text-sm font-bold uppercase text-saffron">Testimonials Manager</p>
+      <h2 className="mt-1 font-serif text-4xl font-bold text-plum">Edit review videos</h2>
+      <p className="mt-3 max-w-2xl leading-7 text-ink/68">
+        Paste Supabase public video URLs to attach video testimonials to written reviews.
+      </p>
+
+      <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {reviews.map((review, index) => (
+          <article key={`${review.name}-${index}`} className="rounded-sukham border border-petal bg-white p-5 shadow-sm">
+            <h3 className="font-serif text-2xl font-bold text-plum">{review.name}</h3>
+            <p className="mt-2 text-sm leading-6 text-ink/65">{review.review}</p>
+
+            <input
+              value={review.video || ""}
+              onChange={(event) => updateReview(index, { video: event.target.value })}
+              placeholder="Paste Supabase video URL"
+              className="mt-4 h-12 w-full rounded-full border border-petal bg-blush px-4 text-sm outline-none focus:border-saffron"
+            />
+
+            {review.video && (
+              <video src={review.video} controls className="mt-4 aspect-video w-full rounded-2xl bg-black" />
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function AdminDashboard() {
   const [email, setEmail] = useState("");
@@ -2294,6 +2413,7 @@ export function AdminDashboard() {
   removePlan,
   addCertificate,
   removeCertificate,
+  updateReview,
   resetContent
   } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
@@ -2403,6 +2523,10 @@ export function AdminDashboard() {
           addGalleryImage={addGalleryImage}
           removeGalleryImage={removeGalleryImage}
           resetContent={resetContent}
+        />
+        <ReviewsManager
+          reviews={content.reviews}
+          updateReview={updateReview}
         />
         <CertificatesManager
           certificates={content.certificates}
