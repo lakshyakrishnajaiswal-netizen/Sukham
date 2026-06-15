@@ -579,32 +579,32 @@ function SukhamPhilosophy() {
 
   const pillars = [
     {
-      title: "Yoga",
+      title: "Practical Yoga & Functional Training",
       copy:
         "Yoga is the science of harmony between body, mind and breath. Through mindful movement, postures and awareness, it enhances strength, flexibility, inner balance and overall wellbeing."
     },
     {
-      title: "Physiotherapy",
+      title: "Physiotherapy & Rehabilitation",
       copy:
         "Physiotherapy restores movement, reduces pain and improves physical function through evidence-based rehabilitation, helping individuals recover, strengthen and live more actively."
     },
     {
-      title: "Nutrition",
-      copy:
-        "Nutrition forms the foundation of health and vitality. Personalized dietary guidance supports healing, energy, disease prevention and sustainable lifestyle transformation."
-    },
-    {
-      title: "Ayurveda",
+      title: "Ayurveda Medicine & Natural Therapy",
       copy:
         "Ayurveda is India's ancient system of holistic healing that promotes balance through personalized nutrition, lifestyle practices and natural therapies, supporting long-term health and wellness."
     },
     {
-      title: "Internal Medicine",
+      title: "Internal Medicine & Specialist Care",
       copy:
         "Internal Medicine focuses on the prevention, diagnosis and management of adult health conditions. Through comprehensive medical care, it supports overall health, early detection and long-term wellbeing."
     },
     {
-      title: "Psychological Counselling",
+      title: "Clinical Dietetics & Sports Nutrition",
+      copy:
+        "Nutrition forms the foundation of health and vitality. Personalized dietary guidance supports healing, energy, disease prevention and sustainable lifestyle transformation."
+    },
+    {
+      title: "Psychological Counselling & Mind Wellbeing",
       copy:
         "Psychological support nurtures emotional resilience and mental wellbeing. Through professional guidance and therapeutic interventions, individuals can better manage stress, improve relationships and achieve personal growth."
     }
@@ -616,7 +616,7 @@ function SukhamPhilosophy() {
     "Understand true potential and passion with respect to body type"
   ];
 
-  const focus = ["In-depth assessment", "Accurate diagnosis", "Treating the root cause"];
+  const focus = ["In-depth assessment", "Accurate diagnosis", "Treating the root cause", "Sustainable healing and recovery", "Long-term wellbeing and balance"];
 
   const goals = [
     "Improve mobility, strength, flexibility and stability",
@@ -633,7 +633,7 @@ function SukhamPhilosophy() {
   const visions = [
     "Support physical, mental, emotional, spiritual and environmental wellbeing",
     "Maintain the progress achieved in treatment",
-    "Build a blissful balance in life"
+    "Create a community of happy, healthy and aware individuals",
   ];
 
   return (
@@ -669,13 +669,11 @@ function SukhamPhilosophy() {
             <p className="text-sm font-bold uppercase text-saffron">Introduction</p>
 
             <h3 className="mt-2 font-serif text-3xl font-bold text-plum">
-              Grounded in yoga, physiotherapy and nutrition
+              An Integrated Approach to Holistic Health
             </h3>
 
             <p className="mt-4 leading-8 text-ink/72">
-              Sukham is grounded on the principles of ancient wisdom with the integrity of modern intelligence,
-              bringing together yoga, physiotherapy, nutrition, Ayurveda, internal medicine and psychological
-              counselling for holistic wellbeing.
+              Sukham combines the wisdom of traditional healing systems with modern healthcare practices to support complete wellbeing. Through Practical Yoga, Functional Training, Physiotherapy, Ayurveda, Natural Therapy, Internal Medicine, Clinical Dietetics, Sports Nutrition Psychological Counselling and Mind Wellbeing, we provide personalized care for the body, mind and lifestyle of every individual.
             </p>
 
             <div className="mt-8 grid gap-5 md:grid-cols-2">
