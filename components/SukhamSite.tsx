@@ -2075,8 +2075,17 @@ function ImageManager({
           <h2 className="mt-1 font-serif text-4xl font-bold text-plum">Change images everywhere</h2>
           <p className="mt-3 max-w-2xl leading-7 text-ink/68">Upload from your computer. Hero, expert, review, workshop, blog and gallery images update immediately and persist in this browser.</p>
         </div>
-        <button type="button" onClick={resetContent} className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-plum shadow-sm">
-          Reset All Content
+        <button type="button" onClick={() => {
+          const confirmed = window.confirm(
+            "Are you sure you want to reset all website content? This will remove your edited homepage, services, problems, gallery, plans, blogs, workshops and reviews."
+          );
+
+          if (confirmed) {
+            resetContent();
+          }
+        }}
+        className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-plum shadow-sm">
+                  Reset All Content
         </button>
       </div>
 
@@ -3455,6 +3464,23 @@ export function AdminDashboard() {
     <div className="min-h-screen bg-blush">
       <Header />
       <main className="section-shell pt-32 pb-20">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-sukham border border-petal bg-white p-5 shadow-soft">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-orange">
+              Admin Shortcut
+            </p>
+            <h2 className="mt-1 font-serif text-2xl font-bold text-plum">
+              Need to review bookings?
+            </h2>
+          </div>
+
+          <a
+            href="#admin-appointments"
+            className="inline-flex items-center justify-center rounded-full bg-[#ff7a1a] px-6 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(255,122,26,0.28)] transition hover:bg-[#e86608]"
+          >
+            Go to Appointments
+          </a>
+        </div>
         <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-bold uppercase text-saffron">Secure Admin Panel</p>
@@ -3542,23 +3568,44 @@ export function AdminDashboard() {
   removeBlog={removeBlog}
 />
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.72fr]">
-          <AppointmentReviewSection
-  appointments={appointments}
-  search={appointmentSearch}
-  statusFilter={appointmentStatusFilter}
-  onSearch={setAppointmentSearch}
-  onStatusChange={updateAppointmentStatus}
-/>
-          <div className="soft-card rounded-sukham p-6">
-            <h2 className="font-serif text-3xl font-bold text-plum">Supabase tables</h2>
-            <div className="mt-5 grid gap-3">
-              {["hero_slides", "experts", "certificates", "plans", "workshops", "blogs", "gallery", "reviews", "appointments"].map((table) => (
-                <div key={table} className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-ink/72">{table}</div>
-              ))}
+        <div id="admin-appointments" className="scroll-mt-28">
+  <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.72fr]">
+                <AppointmentReviewSection
+                  appointments={appointments}
+                  search={appointmentSearch}
+                  statusFilter={appointmentStatusFilter}
+                  onSearch={setAppointmentSearch}
+                  onStatusChange={updateAppointmentStatus}
+                />
+
+                <div className="soft-card rounded-sukham p-6">
+                  <h2 className="font-serif text-3xl font-bold text-plum">
+                    Supabase tables
+                  </h2>
+
+                  <div className="mt-5 grid gap-3">
+                    {[
+                      "hero_slides",
+                      "experts",
+                      "certificates",
+                      "plans",
+                      "workshops",
+                      "blogs",
+                      "gallery",
+                      "reviews",
+                      "appointments",
+                    ].map((table) => (
+                      <div
+                        key={table}
+                        className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-ink/72"
+                      >
+                        {table}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
             </div>
-          </div>
-        </section>
       </main>
     </div>
   );
