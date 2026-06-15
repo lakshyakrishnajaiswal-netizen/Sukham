@@ -58,9 +58,17 @@ type SiteContent = {
   services: ServiceItem[];
   plans: typeof plans;
   certificates: string[];
+  journeys: JourneyItem[];
 };
 
 type AppointmentStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
+
+type JourneyItem = {
+  title: string;
+  copy: string;
+  beforeImage: string;
+  afterImage: string;
+};
 
 type AppointmentEntry = {
   id: string;
@@ -75,6 +83,48 @@ type AppointmentEntry = {
   created_at: string;
 };
 
+const defaultJourneyImage =
+  "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=900&q=85";
+
+const defaultJourneys: JourneyItem[] = [
+  {
+    title: "Posture Correction Journey",
+    copy: "A guided recovery journey focused on alignment, mobility and awareness to help improve everyday posture and comfort.",
+    beforeImage: defaultJourneyImage,
+    afterImage: defaultJourneyImage
+  },
+  {
+    title: "Pain Relief Journey",
+    copy: "A personalized approach combining physiotherapy and therapeutic movement to reduce pain and restore confidence.",
+    beforeImage: defaultJourneyImage,
+    afterImage: defaultJourneyImage
+  },
+  {
+    title: "Mobility Improvement Journey",
+    copy: "A steady progression of strength, flexibility and guided practice to support smoother, safer movement.",
+    beforeImage: defaultJourneyImage,
+    afterImage: defaultJourneyImage
+  },
+  {
+    title: "Yoga Transformation Journey",
+    copy: "A mindful journey from stiffness and stress toward greater breath awareness, balance and inner calm.",
+    beforeImage: defaultJourneyImage,
+    afterImage: defaultJourneyImage
+  },
+  {
+    title: "Rehabilitation Journey",
+    copy: "A structured rehabilitation pathway built around assessment, corrective exercises and progress tracking.",
+    beforeImage: defaultJourneyImage,
+    afterImage: defaultJourneyImage
+  },
+  {
+    title: "Wellness Lifestyle Journey",
+    copy: "A holistic shift toward sustainable wellness through movement, nutrition and daily lifestyle guidance.",
+    beforeImage: defaultJourneyImage,
+    afterImage: defaultJourneyImage
+  }
+];
+
 const defaultContent: SiteContent = {
   heroSlides,
   reviews,
@@ -87,7 +137,8 @@ const defaultContent: SiteContent = {
     image: defaultServiceImage
   })),
   plans,
-  certificates: []
+  certificates: [],
+  journeys: defaultJourneys
 };
 
 function useEditableContent() {
@@ -240,6 +291,27 @@ function removeBlog(index: number) {
     };
     commit(next);
   }
+  function addJourney(journey: JourneyItem) {
+    const next = structuredClone(content) as SiteContent;
+    next.journeys = [journey, ...next.journeys];
+    commit(next);
+  }
+
+  function updateJourney(index: number, fields: Partial<JourneyItem>) {
+    const next = structuredClone(content) as SiteContent;
+    next.journeys[index] = {
+      ...next.journeys[index],
+      ...fields
+    };
+    commit(next);
+  }
+
+  function removeJourney(index: number) {
+    const next = structuredClone(content) as SiteContent;
+    next.journeys = next.journeys.filter((_, journeyIndex) => journeyIndex !== index);
+    commit(next);
+  }
+
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
@@ -263,6 +335,9 @@ function removeBlog(index: number) {
     addCertificate,
     removeCertificate,
     updateReview,
+    addJourney,
+    updateJourney,
+    removeJourney,
     resetContent
   };
 }
@@ -646,6 +721,67 @@ function Reviews({ items }: { items: typeof reviews }) {
     </section>
   );
 }
+function HealingJourneys({ items }: { items: JourneyItem[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <section className="section-shell py-24">
+      <SectionHeading
+        eyebrow="Journeys of Healing"
+        title="Healing journeys at Sukham"
+        copy="Every transformation begins with assessment, guidance and consistent progress."
+      />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {items.map((journey, index) => (
+          <article
+            key={`${journey.title}-${index}`}
+            className="soft-card grid gap-5 rounded-sukham p-5 md:grid-cols-[0.92fr_1.08fr] md:p-6"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase text-saffron">Before</p>
+                <div className="relative h-44 overflow-hidden rounded-2xl bg-blush">
+                  <Image
+                    src={journey.beforeImage}
+                    alt={`${journey.title} before`}
+                    fill
+                    className="object-cover"
+                    unoptimized={journey.beforeImage.startsWith("data:")}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase text-leaf">After</p>
+                <div className="relative h-44 overflow-hidden rounded-2xl bg-blush">
+                  <Image
+                    src={journey.afterImage}
+                    alt={`${journey.title} after`}
+                    fill
+                    className="object-cover"
+                    unoptimized={journey.afterImage.startsWith("data:")}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-center">
+              <h3 className="font-serif text-3xl font-bold text-plum">
+                {journey.title}
+              </h3>
+
+              <p className="mt-4 leading-7 text-ink/70">
+                {journey.copy}
+              </p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function SukhamPhilosophy() {
   const affectedSystems = [
     "Postural Disorders",
@@ -1330,6 +1466,7 @@ export function SukhamSite() {
       <main>
         <Hero slides={content.heroSlides} />
         <Reviews items={content.reviews} />
+        <HealingJourneys items={content.journeys} />
         <SukhamPhilosophy />
         <Experts items={content.experts} />
         <Certificates images={content.certificates} />
@@ -2390,6 +2527,145 @@ function ReviewsManager({
     </section>
   );
 }
+function JourneysManager({
+  journeys,
+  addJourney,
+  updateJourney,
+  removeJourney
+}: {
+  journeys: JourneyItem[];
+  addJourney: (journey: JourneyItem) => void;
+  updateJourney: (index: number, fields: Partial<JourneyItem>) => void;
+  removeJourney: (index: number) => void;
+}) {
+  return (
+    <section className="soft-card mb-8 rounded-sukham p-6">
+      <p className="text-sm font-bold uppercase text-saffron">Before & After Manager</p>
+      <h2 className="mt-1 font-serif text-4xl font-bold text-plum">
+        Edit healing journeys
+      </h2>
+      <p className="mt-3 max-w-2xl leading-7 text-ink/68">
+        Add and edit before/after images, headings and journey descriptions.
+      </p>
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+
+          const form = event.currentTarget;
+          const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+
+          addJourney({
+            title: data.title || "New Healing Journey",
+            copy: data.copy || "Journey details coming soon.",
+            beforeImage: data.beforeImage || defaultJourneyImage,
+            afterImage: data.afterImage || defaultJourneyImage
+          });
+
+          form.reset();
+        }}
+        className="mt-6 rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
+      >
+        <h3 className="font-serif text-2xl font-bold text-plum">Add Journey</h3>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <Field label="Heading" name="title" />
+          <Field label="Before Image URL" name="beforeImage" />
+          <Field label="After Image URL" name="afterImage" />
+
+          <label className="grid gap-2 text-sm font-bold text-plum md:col-span-2">
+            Journey Content
+            <textarea
+              name="copy"
+              rows={4}
+              className="rounded-2xl border border-petal bg-blush px-4 py-3 text-sm outline-none focus:border-saffron"
+            />
+          </label>
+        </div>
+
+        <button className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-plum px-5 py-3 text-sm font-bold text-white">
+          Add Journey
+        </button>
+      </form>
+
+      <div className="mt-7 grid gap-5">
+        {journeys.map((journey, index) => (
+          <form
+            key={`${journey.title}-${index}`}
+            onSubmit={(event) => {
+              event.preventDefault();
+
+              const form = event.currentTarget;
+              const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+
+              updateJourney(index, {
+                title: data.title,
+                copy: data.copy,
+                beforeImage: data.beforeImage,
+                afterImage: data.afterImage
+              });
+            }}
+            className="rounded-sukham border border-gold/20 bg-white p-5 shadow-sm"
+          >
+            <div className="grid gap-4 lg:grid-cols-[0.7fr_1fr]">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative h-40 overflow-hidden rounded-2xl bg-blush">
+                  <Image
+                    src={journey.beforeImage}
+                    alt={`${journey.title} before`}
+                    fill
+                    className="object-cover"
+                    unoptimized={journey.beforeImage.startsWith("data:")}
+                  />
+                </div>
+
+                <div className="relative h-40 overflow-hidden rounded-2xl bg-blush">
+                  <Image
+                    src={journey.afterImage}
+                    alt={`${journey.title} after`}
+                    fill
+                    className="object-cover"
+                    unoptimized={journey.afterImage.startsWith("data:")}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4">
+                <Field label="Heading" name="title" value={journey.title} />
+                <Field label="Before Image URL" name="beforeImage" value={journey.beforeImage} />
+                <Field label="After Image URL" name="afterImage" value={journey.afterImage} />
+
+                <label className="grid gap-2 text-sm font-bold text-plum">
+                  Journey Content
+                  <textarea
+                    name="copy"
+                    rows={4}
+                    defaultValue={journey.copy}
+                    className="rounded-2xl border border-petal bg-blush px-4 py-3 text-sm outline-none focus:border-saffron"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button className="inline-flex flex-1 items-center justify-center rounded-full bg-saffron px-5 py-3 text-sm font-bold text-white">
+                Save Journey
+              </button>
+
+              <button
+                type="button"
+                onClick={() => removeJourney(index)}
+                className="inline-flex flex-1 items-center justify-center rounded-full bg-red-50 px-5 py-3 text-sm font-bold text-red-600"
+              >
+                Delete Journey
+              </button>
+            </div>
+          </form>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function AdminDashboard() {
   const [email, setEmail] = useState("");
@@ -2414,6 +2690,9 @@ export function AdminDashboard() {
   addCertificate,
   removeCertificate,
   updateReview,
+  addJourney,
+  updateJourney,
+  removeJourney,
   resetContent
   } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
@@ -2527,6 +2806,12 @@ export function AdminDashboard() {
         <ReviewsManager
           reviews={content.reviews}
           updateReview={updateReview}
+        />
+        <JourneysManager
+          journeys={content.journeys}
+          addJourney={addJourney}
+          updateJourney={updateJourney}
+          removeJourney={removeJourney}
         />
         <CertificatesManager
           certificates={content.certificates}
