@@ -45,9 +45,96 @@ type ServiceItem = {
   title: string;
   image: string;
 };
+type ServiceCategory = {
+  title: string;
+  services: ServiceItem[];
+};
+type ProblemItem = {
+    title: string;
+    image: string;
+  };
+
+type ProblemCategory = {
+    title: string;
+    problems: ProblemItem[];
+  };
 
 const defaultServiceImage =
   "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=900&q=85";
+
+const defaultServiceCategories: ServiceCategory[] = [
+  {
+    title: "Postural Disorders",
+    services: [
+      { title: "Posture Assessment", image: defaultServiceImage },
+      { title: "Posture Correction", image: defaultServiceImage },
+      { title: "Desk Ergonomics Training", image: defaultServiceImage },
+      { title: "Spine Alignment Exercises", image: defaultServiceImage },
+      { title: "Mobility Reset Sessions", image: defaultServiceImage },
+    ],
+  },
+  {
+    title: "Musculoskeletal Disorders",
+    services: [
+      { title: "Orthopedic Rehabilitation", image: defaultServiceImage },
+      { title: "Sports Injury Rehab", image: defaultServiceImage },
+      { title: "Post-Surgical Rehab", image: defaultServiceImage },
+      { title: "Pain Management", image: defaultServiceImage },
+      { title: "Corrective Exercises", image: defaultServiceImage },
+    ],
+  },
+  {
+    title: "Neurological & Psychological Disorders",
+    services: [
+      { title: "Neurological Rehabilitation", image: defaultServiceImage },
+      { title: "Balance Training", image: defaultServiceImage },
+      { title: "Stress Management", image: defaultServiceImage },
+      { title: "Breathing Training", image: defaultServiceImage },
+      { title: "Therapeutic Yoga", image: defaultServiceImage },
+    ],
+  },
+  {
+    title: "Cardiovascular-Respiratory Disorders",
+    services: [
+      { title: "Breathwork Therapy", image: defaultServiceImage },
+      { title: "Stamina Building", image: defaultServiceImage },
+      { title: "Cardio-Respiratory Conditioning", image: defaultServiceImage },
+      { title: "Gentle Fitness Recovery", image: defaultServiceImage },
+      { title: "Lifestyle Wellness Sessions", image: defaultServiceImage },
+    ],
+  },
+  {
+    title: "Digestive & Endocrine Disorders",
+    services: [
+      { title: "Weight Management", image: defaultServiceImage },
+      { title: "Nutrition Guidance", image: defaultServiceImage },
+      { title: "Lifestyle Disorder Management", image: defaultServiceImage },
+      { title: "Metabolic Wellness Support", image: defaultServiceImage },
+      { title: "Yoga for Digestion", image: defaultServiceImage },
+    ],
+  },
+  {
+    title: "Urogenital & Gynecological Disorders",
+    services: [
+      { title: "Prenatal Yoga", image: defaultServiceImage },
+      { title: "Postnatal Yoga", image: defaultServiceImage },
+      { title: "Pelvic Floor Support", image: defaultServiceImage },
+      { title: "Women’s Wellness Therapy", image: defaultServiceImage },
+      { title: "Senior Citizen Mobility", image: defaultServiceImage },
+    ],
+  },
+  {
+    title: "Autoimmune Disorders",
+    services: [
+      { title: "Gentle Mobility Therapy", image: defaultServiceImage },
+      { title: "Pain Flare-Up Support", image: defaultServiceImage },
+      { title: "Joint Stiffness Care", image: defaultServiceImage },
+      { title: "Energy Conservation Training", image: defaultServiceImage },
+      { title: "Long-Term Wellness Program", image: defaultServiceImage },
+    ],
+  },
+];
+
 type SiteContent = {
   heroSlides: typeof heroSlides;
   reviews: typeof reviews;
@@ -55,10 +142,11 @@ type SiteContent = {
   workshops: typeof workshops;
   blogs: typeof blogs;
   gallery: typeof gallery;
-  services: ServiceItem[];
+  serviceCategories: ServiceCategory[];
   plans: typeof plans;
   certificates: string[];
   journeys: JourneyItem[];
+  problemCategories: ProblemCategory[];
 };
 
 type AppointmentStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
@@ -124,7 +212,81 @@ const defaultJourneys: JourneyItem[] = [
     afterImage: defaultJourneyImage
   }
 ];
+const defaultProblemImage =
+  "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=900&q=85";
 
+const defaultProblemCategories: ProblemCategory[] = [
+  {
+    title: "Postural Disorders",
+    problems: [
+      { title: "Poor posture", image: defaultProblemImage },
+      { title: "Rounded shoulders", image: defaultProblemImage },
+      { title: "Forward neck posture", image: defaultProblemImage },
+      { title: "Back stiffness", image: defaultProblemImage },
+      { title: "Work-from-desk strain", image: defaultProblemImage },
+    ],
+  },
+  {
+    title: "Musculoskeletal Disorders",
+    problems: [
+      { title: "Neck pain", image: defaultProblemImage },
+      { title: "Shoulder pain", image: defaultProblemImage },
+      { title: "Lower back pain", image: defaultProblemImage },
+      { title: "Knee pain", image: defaultProblemImage },
+      { title: "Sports injuries", image: defaultProblemImage },
+    ],
+  },
+  {
+    title: "Neurological & Psychological Disorders",
+    problems: [
+      { title: "Stress and anxiety", image: defaultProblemImage },
+      { title: "Sleep disturbance", image: defaultProblemImage },
+      { title: "Post-stroke movement issues", image: defaultProblemImage },
+      { title: "Balance problems", image: defaultProblemImage },
+      { title: "Low confidence after injury", image: defaultProblemImage },
+    ],
+  },
+  {
+    title: "Cardiovascular-Respiratory Disorders",
+    problems: [
+      { title: "Low stamina", image: defaultProblemImage },
+      { title: "Breathing difficulty", image: defaultProblemImage },
+      { title: "Post-illness weakness", image: defaultProblemImage },
+      { title: "Reduced endurance", image: defaultProblemImage },
+      { title: "Lifestyle-related fatigue", image: defaultProblemImage },
+    ],
+  },
+  {
+    title: "Digestive & Endocrine Disorders",
+    problems: [
+      { title: "Weight management concerns", image: defaultProblemImage },
+      { title: "Lifestyle imbalance", image: defaultProblemImage },
+      { title: "Low energy levels", image: defaultProblemImage },
+      { title: "Digestive discomfort", image: defaultProblemImage },
+      { title: "Metabolic health support", image: defaultProblemImage },
+    ],
+  },
+  {
+    title: "Urogenital & Gynecological Disorders",
+    problems: [
+      { title: "Prenatal discomfort", image: defaultProblemImage },
+      { title: "Postnatal recovery", image: defaultProblemImage },
+      { title: "Pelvic floor weakness", image: defaultProblemImage },
+      { title: "Menstrual health support", image: defaultProblemImage },
+      { title: "Women’s wellness care", image: defaultProblemImage },
+    ],
+  },
+  {
+    title: "Autoimmune Disorders",
+    problems: [
+      { title: "Joint stiffness", image: defaultProblemImage },
+      { title: "Chronic fatigue", image: defaultProblemImage },
+      { title: "Mobility limitation", image: defaultProblemImage },
+      { title: "Pain flare-up support", image: defaultProblemImage },
+      { title: "Long-term wellness management", image: defaultProblemImage },
+    ],
+  },
+];
 const defaultContent: SiteContent = {
   heroSlides,
   reviews,
@@ -132,13 +294,11 @@ const defaultContent: SiteContent = {
   workshops,
   blogs,
   gallery,
-  services: services.map((service) => ({
-    title: service,
-    image: defaultServiceImage
-  })),
   plans,
   certificates: [],
-  journeys: defaultJourneys
+  journeys: defaultJourneys,
+  problemCategories: defaultProblemCategories,
+  serviceCategories: defaultServiceCategories,
 };
 
 function useEditableContent() {
@@ -148,7 +308,17 @@ function useEditableContent() {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved) {
     try {
-      const parsed = { ...defaultContent, ...JSON.parse(saved) };
+      const parsedContent = JSON.parse(saved);
+
+      const parsed = {
+        ...defaultContent,
+        ...parsedContent,
+        problemCategories:
+          parsedContent.problemCategories || defaultContent.problemCategories,
+        serviceCategories:
+          parsedContent.serviceCategories || defaultContent.serviceCategories,
+      };
+        setContent(parsed);
 
       parsed.reviews = parsed.reviews.map((review: typeof reviews[number] & { video?: string }) => ({
         ...review,
@@ -193,28 +363,6 @@ function useEditableContent() {
   function updateExpert(index: number, fields: Partial<SiteContent["experts"][number]>) {
     const next = structuredClone(content) as SiteContent;
     next.experts[index] = { ...next.experts[index], ...fields };
-    commit(next);
-  }
-  function addService(service: string, image: string) {
-    const cleanService = service.trim();
-    const cleanImage = image.trim();
-
-    if (!cleanService) return;
-
-    const next = structuredClone(content) as SiteContent;
-    next.services = [
-      {
-        title: cleanService,
-        image: cleanImage || defaultServiceImage
-      },
-      ...next.services
-    ];
-    commit(next);
-  }
-
-  function removeService(index: number) {
-    const next = structuredClone(content) as SiteContent;
-    next.services = next.services.filter((_, serviceIndex) => serviceIndex !== index);
     commit(next);
   }
   function addGalleryImage(image: string) {
@@ -275,14 +423,6 @@ function removeBlog(index: number) {
     next.certificates = next.certificates.filter((_, certificateIndex) => certificateIndex !== index);
     commit(next);
   }
-  function updateService(index: number, fields: Partial<ServiceItem>) {
-    const next = structuredClone(content) as SiteContent;
-    next.services[index] = {
-      ...next.services[index],
-      ...fields
-    };
-    commit(next);
-  }
   function updateReview(index: number, fields: Partial<SiteContent["reviews"][number]>) {
     const next = structuredClone(content) as SiteContent;
     next.reviews[index] = {
@@ -311,6 +451,188 @@ function removeBlog(index: number) {
     next.journeys = next.journeys.filter((_, journeyIndex) => journeyIndex !== index);
     commit(next);
   }
+  function addProblemCategory() {
+    commit({
+      ...content,
+      problemCategories: [
+        ...content.problemCategories,
+        {
+          title: "New Problem Category",
+          problems: [
+            {
+              title: "New problem",
+              image: defaultProblemImage,
+            },
+          ],
+        },
+      ],
+    });
+  }
+
+  function updateProblemCategory(categoryIndex: number, title: string) {
+    commit({
+      ...content,
+      problemCategories: content.problemCategories.map((category, index) =>
+        index === categoryIndex ? { ...category, title } : category
+      ),
+    });
+  }
+
+  function removeProblemCategory(categoryIndex: number) {
+    commit({
+      ...content,
+      problemCategories: content.problemCategories.filter(
+        (_, index) => index !== categoryIndex
+      ),
+    });
+  }
+
+  function addProblem(categoryIndex: number) {
+    commit({
+      ...content,
+      problemCategories: content.problemCategories.map((category, index) =>
+        index === categoryIndex
+          ? {
+              ...category,
+              problems: [
+                ...category.problems,
+                {
+                  title: "New problem",
+                  image: defaultProblemImage,
+                },
+              ],
+            }
+          : category
+      ),
+    });
+  }
+
+  function updateProblem(
+    categoryIndex: number,
+    problemIndex: number,
+    fields: Partial<ProblemItem>
+  ) {
+    commit({
+      ...content,
+      problemCategories: content.problemCategories.map((category, index) =>
+        index === categoryIndex
+          ? {
+              ...category,
+              problems: category.problems.map((problem, innerIndex) =>
+                innerIndex === problemIndex ? { ...problem, ...fields } : problem
+              ),
+            }
+          : category
+      ),
+    });
+  }
+
+  function removeProblem(categoryIndex: number, problemIndex: number) {
+    commit({
+      ...content,
+      problemCategories: content.problemCategories.map((category, index) =>
+        index === categoryIndex
+          ? {
+              ...category,
+              problems: category.problems.filter(
+                (_, innerIndex) => innerIndex !== problemIndex
+              ),
+            }
+          : category
+      ),
+    });
+  }
+  function addServiceCategory() {
+  commit({
+    ...content,
+    serviceCategories: [
+      ...content.serviceCategories,
+      {
+        title: "New Service Department",
+        services: [
+          {
+            title: "New service",
+            image: defaultServiceImage,
+          },
+        ],
+      },
+    ],
+  });
+}
+
+function updateServiceCategory(categoryIndex: number, title: string) {
+  commit({
+    ...content,
+    serviceCategories: content.serviceCategories.map((category, index) =>
+      index === categoryIndex ? { ...category, title } : category
+    ),
+  });
+}
+
+function removeServiceCategory(categoryIndex: number) {
+  commit({
+    ...content,
+    serviceCategories: content.serviceCategories.filter(
+      (_, index) => index !== categoryIndex
+    ),
+  });
+}
+
+function addService(categoryIndex: number) {
+  commit({
+    ...content,
+    serviceCategories: content.serviceCategories.map((category, index) =>
+      index === categoryIndex
+        ? {
+            ...category,
+            services: [
+              ...category.services,
+              {
+                title: "New service",
+                image: defaultServiceImage,
+              },
+            ],
+          }
+        : category
+    ),
+  });
+}
+
+function updateService(
+  categoryIndex: number,
+  serviceIndex: number,
+  fields: Partial<ServiceItem>
+) {
+  commit({
+    ...content,
+    serviceCategories: content.serviceCategories.map((category, index) =>
+      index === categoryIndex
+        ? {
+            ...category,
+            services: category.services.map((service, innerIndex) =>
+              innerIndex === serviceIndex ? { ...service, ...fields } : service
+            ),
+          }
+        : category
+    ),
+  });
+}
+
+function removeService(categoryIndex: number, serviceIndex: number) {
+  commit({
+    ...content,
+    serviceCategories: content.serviceCategories.map((category, index) =>
+      index === categoryIndex
+        ? {
+            ...category,
+            services: category.services.filter(
+              (_, innerIndex) => innerIndex !== serviceIndex
+            ),
+          }
+        : category
+    ),
+  });
+}
 
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
@@ -322,6 +644,9 @@ function removeBlog(index: number) {
     updateImage,
     addItem,
     updateExpert,
+    addServiceCategory,
+    updateServiceCategory,
+    removeServiceCategory,
     addService,
     updateService,
     removeService,
@@ -338,6 +663,12 @@ function removeBlog(index: number) {
     addJourney,
     updateJourney,
     removeJourney,
+    addProblemCategory,
+    updateProblemCategory,
+    removeProblemCategory,
+    addProblem,
+    updateProblem,
+    removeProblem,
     resetContent
   };
 }
@@ -1058,40 +1389,107 @@ function Certificates({ images }: { images: string[] }) {
     </section>
   );
 }
+function ProblemsWeTreat({
+  categories,
+}: {
+  categories: ProblemCategory[];
+}) {
+  if (!categories.length) return null;
 
-function Services({ items }: { items: ServiceItem[] }) {
   return (
-    <section id="services" className="bg-white/54 py-20">
-      <div className="section-shell">
-        <SectionHeading
-          eyebrow="Services"
-          title="Root-cause care across yoga, physiotherapy and wellness"
-        />
+    <section id="problems" className="section-shell py-24">
+      <SectionHeading
+        eyebrow="Problems We Treat"
+        title="Root-cause healing for modern lifestyle concerns"
+        copy="Sukham supports recovery from everyday pain, posture issues, movement limitations and lifestyle-related health concerns through yoga, physiotherapy and holistic care."
+      />
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
-          {items.map((service) => (
-            <article
-              key={service.title}
-              className="overflow-hidden rounded-sukham border border-petal bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-wellness"
-            >
-              <div className="relative h-36 bg-blush">
-                <Image
-                  src={service.image}
-                  alt={service.title}
-                  fill
-                  className="object-cover"
-                  unoptimized={service.image.startsWith("data:")}
-                />
-              </div>
+      <div className="mt-10 space-y-12">
+        {categories.map((category) => (
+          <div key={category.title}>
+            <h3 className="font-serif text-3xl font-bold text-plum">
+              {category.title}
+            </h3>
 
-              <div className="flex min-h-20 items-center justify-center px-4 py-4 text-center">
-                <h3 className="text-sm font-bold leading-6 text-plum">
-                  {service.title}
-                </h3>
-              </div>
-            </article>
-          ))}
-        </div>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+              {category.problems.map((problem) => (
+                <article
+                  key={problem.title}
+                  className="overflow-hidden rounded-sukham border border-petal bg-white shadow-soft"
+                >
+                  <div className="relative h-36 bg-blush">
+                    <Image
+                      src={problem.image}
+                      alt={problem.title}
+                      fill
+                      className="object-cover"
+                      unoptimized={problem.image.startsWith("data:")}
+                    />
+                  </div>
+
+                  <div className="flex min-h-[86px] items-center justify-center px-4 py-5 text-center">
+                    <h4 className="text-sm font-bold leading-6 text-plum">
+                      {problem.title}
+                    </h4>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Services({
+  categories,
+}: {
+  categories: ServiceCategory[];
+}) {
+  if (!categories.length) return null;
+
+  return (
+    <section id="services" className="section-shell py-24">
+      <SectionHeading
+        eyebrow="Services"
+        title="Care pathways sorted by condition"
+        copy="Explore Sukham’s yoga, physiotherapy and wellness services grouped by the kind of healing support you need."
+      />
+
+      <div className="mt-10 space-y-12">
+        {categories.map((category) => (
+          <div key={category.title}>
+            <h3 className="font-serif text-3xl font-bold text-plum">
+              {category.title}
+            </h3>
+
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+              {category.services.map((service) => (
+                <article
+                  key={service.title}
+                  className="overflow-hidden rounded-sukham border border-petal bg-white shadow-soft"
+                >
+                  <div className="relative h-36 bg-blush">
+                    <Image
+                      src={service.image}
+                      alt={service.title}
+                      fill
+                      className="object-cover"
+                      unoptimized={service.image.startsWith("data:")}
+                    />
+                  </div>
+
+                  <div className="flex min-h-[86px] items-center justify-center px-4 py-5 text-center">
+                    <h4 className="text-sm font-bold leading-6 text-plum">
+                      {service.title}
+                    </h4>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -1289,7 +1687,7 @@ function LocateCentre() {
   );
 }
 
-function Appointment({ servicesList }: { servicesList: ServiceItem[] }) {
+function Appointment({ serviceCategories }: { serviceCategories: ServiceCategory[] }) {
   const [status, setStatus] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1329,9 +1727,13 @@ function Appointment({ servicesList }: { servicesList: ServiceItem[] }) {
             Service
             <select required name="service" className="rounded-2xl border border-petal bg-blush px-4 py-3 outline-none focus:border-saffron">
               <option value="">Select service</option>
-              {servicesList.map((service) => (
-                <option key={service.title}>{service.title}</option>
-              ))}
+              {serviceCategories.flatMap((category) =>
+                category.services.map((service) => (
+                  <option key={`${category.title}-${service.title}`} value={service.title}>
+                    {service.title}
+                  </option>
+                ))
+              )}
             </select>
           </label>
           <label className="grid gap-2 text-sm font-bold text-plum">
@@ -1468,16 +1870,17 @@ export function SukhamSite() {
         <Reviews items={content.reviews} />
         <HealingJourneys items={content.journeys} />
         <SukhamPhilosophy />
+        <ProblemsWeTreat categories={content.problemCategories} />
+        <Services categories={content.serviceCategories} />
         <Experts items={content.experts} />
         <Certificates images={content.certificates} />
-        <Services items={content.services} />
         <Plans items={content.plans} />
         <WorkshopsAndBlogs items={content.workshops} />
         <Blogs items={content.blogs} />
         <Gallery images={content.gallery} />
         <WhatsappQuestion />
         <LocateCentre />
-        <Appointment servicesList={content.services} />
+        <Appointment serviceCategories={content.serviceCategories} />
       </main>
       <Footer />
       <WhatsappFloating />
@@ -1734,6 +2137,32 @@ function Field({ label, name, type = "text", value, placeholder }: { label: stri
     <label className="grid gap-2 text-sm font-bold text-plum">
       {label}
       <input name={name} type={type} defaultValue={value} placeholder={placeholder} className="rounded-2xl border border-petal bg-white px-4 py-3 text-sm outline-none focus:border-saffron" />
+    </label>
+  );
+}
+function EditableField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold uppercase tracking-[0.18em] text-ink/50">
+        {label}
+      </span>
+
+      <input
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 w-full rounded-2xl border border-petal bg-white px-4 py-3 text-sm font-semibold text-plum outline-none transition focus:border-orange"
+      />
     </label>
   );
 }
@@ -2180,99 +2609,138 @@ function AppointmentReviewSection({
 }
 
 function ServicesManager({
-  services,
+  categories,
+  addServiceCategory,
+  updateServiceCategory,
+  removeServiceCategory,
   addService,
   updateService,
-  removeService
+  removeService,
 }: {
-  services: ServiceItem[];
-  addService: (service: string, image: string) => void;
-  updateService: (index: number, fields: Partial<ServiceItem>) => void;
-  removeService: (index: number) => void;
+  categories: ServiceCategory[];
+  addServiceCategory: () => void;
+  updateServiceCategory: (categoryIndex: number, title: string) => void;
+  removeServiceCategory: (categoryIndex: number) => void;
+  addService: (categoryIndex: number) => void;
+  updateService: (
+    categoryIndex: number,
+    serviceIndex: number,
+    fields: Partial<ServiceItem>
+  ) => void;
+  removeService: (categoryIndex: number, serviceIndex: number) => void;
 }) {
-  const [newService, setNewService] = useState("");
-  const [newServiceImage, setNewServiceImage] = useState("");
-
   return (
-    <section className="soft-card mb-8 rounded-sukham p-6">
-      <p className="text-sm font-bold uppercase text-saffron">Services Manager</p>
-      <h2 className="mt-1 font-serif text-4xl font-bold text-plum">Edit services</h2>
-      <p className="mt-3 max-w-2xl leading-7 text-ink/68">
-        Add or remove services shown on the homepage and appointment form.
-      </p>
+    <div className="soft-card rounded-sukham p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h3 className="font-serif text-2xl font-bold text-plum">
+            Services
+          </h3>
+          <p className="mt-1 text-sm text-ink/60">
+            Edit service departments, service names and Supabase image URLs.
+          </p>
+        </div>
 
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          addService(newService, newServiceImage);
-          setNewService("");
-          setNewServiceImage("");
-        }}
-        className="mt-6 grid gap-3 md:grid-cols-[1fr_1fr_auto]"
-      >
-        <input
-          value={newService}
-          onChange={(event) => setNewService(event.target.value)}
-          placeholder="Add new service"
-          className="h-12 rounded-full border border-petal bg-white px-5 text-sm outline-none focus:border-saffron"
-        />
-
-        <input
-          value={newServiceImage}
-          onChange={(event) => setNewServiceImage(event.target.value)}
-          placeholder="Paste Supabase service image URL"
-          className="h-12 rounded-full border border-petal bg-white px-5 text-sm outline-none focus:border-saffron"
-        />
-
-        <button className="inline-flex items-center justify-center rounded-full bg-plum px-6 py-3 text-sm font-bold text-white">
-          Add Service
+        <button
+          type="button"
+          onClick={addServiceCategory}
+          className="rounded-full bg-orange px-5 py-3 text-sm font-bold text-white shadow-soft"
+        >
+          Add Service Department
         </button>
-      </form>
+      </div>
 
-      <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {services.map((service, index) => (
-          <article
-            key={`${service.title}-${index}`}
-            className="rounded-sukham border border-petal bg-white p-4 shadow-sm"
+      <div className="mt-6 space-y-6">
+        {categories.map((category, categoryIndex) => (
+          <div
+            key={`${category.title}-${categoryIndex}`}
+            className="rounded-3xl border border-petal bg-blush/40 p-5"
           >
-            <div className="relative h-40 overflow-hidden rounded-2xl bg-blush">
-              <Image
-                src={service.image}
-                alt={service.title}
-                fill
-                className="object-cover"
-                unoptimized={service.image.startsWith("data:")}
-              />
-            </div>
-
-            <div className="mt-4 grid gap-3">
-              <input
-                value={service.title}
-                onChange={(event) => updateService(index, { title: event.target.value })}
-                className="h-11 rounded-full border border-petal bg-blush px-4 text-sm font-bold text-plum outline-none focus:border-saffron"
-              />
-
-              <input
-                value={service.image}
-                onChange={(event) => updateService(index, { image: event.target.value })}
-                placeholder="Supabase image URL"
-                className="h-11 rounded-full border border-petal bg-blush px-4 text-xs outline-none focus:border-saffron"
+            <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+              <EditableField
+                label="Department Name"
+                value={category.title}
+                onChange={(value) =>
+                  updateServiceCategory(categoryIndex, value)
+                }
               />
 
               <button
                 type="button"
-                onClick={() => removeService(index)}
-                className="rounded-full bg-red-50 px-3 py-2 text-xs font-bold text-red-600"
+                onClick={() => removeServiceCategory(categoryIndex)}
+                className="self-end rounded-full border border-red-200 px-5 py-3 text-sm font-bold text-red-600"
               >
-                Remove Service
+                Delete Department
               </button>
             </div>
-          </article>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {category.services.map((service, serviceIndex) => (
+                <div
+                  key={`${service.title}-${serviceIndex}`}
+                  className="rounded-2xl border border-petal bg-white p-4"
+                >
+                  <EditableField
+                    label="Service Name"
+                    value={service.title}
+                    onChange={(value) =>
+                      updateService(categoryIndex, serviceIndex, {
+                        title: value,
+                      })
+                    }
+                  />
+
+                  <div className="mt-4">
+                    <EditableField
+                      label="Service Image Supabase URL"
+                      value={service.image}
+                      onChange={(value) =>
+                        updateService(categoryIndex, serviceIndex, {
+                          image: value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {service.image && (
+                    <div className="relative mt-4 h-36 overflow-hidden rounded-2xl bg-blush">
+                      <Image
+                        src={service.image}
+                        alt={service.title}
+                        fill
+                        className="object-cover"
+                        unoptimized={service.image.startsWith("data:")}
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeService(categoryIndex, serviceIndex)
+                    }
+                    className="mt-4 rounded-full border border-red-200 px-4 py-2 text-sm font-bold text-red-600"
+                  >
+                    Delete Service
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => addService(categoryIndex)}
+              className="mt-5 rounded-full border border-orange px-5 py-3 text-sm font-bold text-orange"
+            >
+              Add Service
+            </button>
+          </div>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
+
 function PlansManager({
   plans,
   addPlan,
@@ -2666,6 +3134,138 @@ function JourneysManager({
     </section>
   );
 }
+function ProblemsManager({
+  categories,
+  addProblemCategory,
+  updateProblemCategory,
+  removeProblemCategory,
+  addProblem,
+  updateProblem,
+  removeProblem,
+}: {
+  categories: ProblemCategory[];
+  addProblemCategory: () => void;
+  updateProblemCategory: (categoryIndex: number, title: string) => void;
+  removeProblemCategory: (categoryIndex: number) => void;
+  addProblem: (categoryIndex: number) => void;
+  updateProblem: (
+    categoryIndex: number,
+    problemIndex: number,
+    fields: Partial<ProblemItem>
+  ) => void;
+  removeProblem: (categoryIndex: number, problemIndex: number) => void;
+}) {
+  return (
+    <div className="soft-card rounded-sukham p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h3 className="font-serif text-2xl font-bold text-plum">
+            Problems We Treat
+          </h3>
+          <p className="mt-1 text-sm text-ink/60">
+            Edit problem departments, problem names and Supabase image URLs.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={addProblemCategory}
+          className="rounded-full bg-orange px-5 py-3 text-sm font-bold text-white shadow-soft"
+        >
+          Add Department
+        </button>
+      </div>
+
+      <div className="mt-6 space-y-6">
+        {categories.map((category, categoryIndex) => (
+          <div
+            key={`${category.title}-${categoryIndex}`}
+            className="rounded-3xl border border-petal bg-blush/40 p-5"
+          >
+            <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+              <EditableField
+                label="Department Name"
+                value={category.title}
+                onChange={(value) =>
+                  updateProblemCategory(categoryIndex, value)
+                }
+              />
+
+              <button
+                type="button"
+                onClick={() => removeProblemCategory(categoryIndex)}
+                className="self-end rounded-full border border-red-200 px-5 py-3 text-sm font-bold text-red-600"
+              >
+                Delete Department
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {category.problems.map((problem, problemIndex) => (
+                <div
+                  key={`${problem.title}-${problemIndex}`}
+                  className="rounded-2xl border border-petal bg-white p-4"
+                >
+                  <EditableField
+                    label="Problem Name"
+                    value={problem.title}
+                    onChange={(value) =>
+                      updateProblem(categoryIndex, problemIndex, {
+                        title: value,
+                      })
+                    }
+                  />
+
+                  <div className="mt-4">
+                    <EditableField
+                      label="Problem Image Supabase URL"
+                      value={problem.image}
+                      onChange={(value) =>
+                        updateProblem(categoryIndex, problemIndex, {
+                          image: value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {problem.image && (
+                    <div className="relative mt-4 h-36 overflow-hidden rounded-2xl bg-blush">
+                      <Image
+                        src={problem.image}
+                        alt={problem.title}
+                        fill
+                        className="object-cover"
+                        unoptimized={problem.image.startsWith("data:")}
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeProblem(categoryIndex, problemIndex)
+                    }
+                    className="mt-4 rounded-full border border-red-200 px-4 py-2 text-sm font-bold text-red-600"
+                  >
+                    Delete Problem
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => addProblem(categoryIndex)}
+              className="mt-5 rounded-full border border-orange px-5 py-3 text-sm font-bold text-orange"
+            >
+              Add Problem
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function AdminDashboard() {
   const [email, setEmail] = useState("");
@@ -2677,6 +3277,9 @@ export function AdminDashboard() {
   updateImage,
   addItem,
   updateExpert,
+  addServiceCategory,
+  updateServiceCategory,
+  removeServiceCategory,
   addService,
   updateService,
   removeService,
@@ -2693,6 +3296,12 @@ export function AdminDashboard() {
   addJourney,
   updateJourney,
   removeJourney,
+  addProblemCategory,
+  updateProblemCategory,
+  removeProblemCategory,
+  addProblem,
+  updateProblem,
+  removeProblem,
   resetContent
   } = useEditableContent();
   const { appointments, updateAppointmentStatus } = useAppointments();
@@ -2818,8 +3427,20 @@ export function AdminDashboard() {
           addCertificate={addCertificate}
           removeCertificate={removeCertificate}
         />
+        <ProblemsManager
+          categories={content.problemCategories}
+          addProblemCategory={addProblemCategory}
+          updateProblemCategory={updateProblemCategory}
+          removeProblemCategory={removeProblemCategory}
+          addProblem={addProblem}
+          updateProblem={updateProblem}
+          removeProblem={removeProblem}
+        />
         <ServicesManager
-          services={content.services}
+          categories={content.serviceCategories}
+          addServiceCategory={addServiceCategory}
+          updateServiceCategory={updateServiceCategory}
+          removeServiceCategory={removeServiceCategory}
           addService={addService}
           updateService={updateService}
           removeService={removeService}
