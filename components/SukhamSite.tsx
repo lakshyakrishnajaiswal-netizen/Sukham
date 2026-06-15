@@ -1494,6 +1494,88 @@ function Services({
     </section>
   );
 }
+function SukhamFlowchart() {
+  const steps = [
+    {
+      title: "Full Body Assessment",
+      copy: "We assess posture, pain, mobility, strength and health history before planning care.",
+    },
+    {
+      title: "Customized Yoga Program",
+      copy: "A safe yoga plan is designed around your body type, condition and personal goals.",
+    },
+    {
+      title: "Demonstration & Corrections",
+      copy: "Experts guide each movement with alignment correction and safe execution.",
+    },
+    {
+      title: "Goal-Oriented Outcomes",
+      copy: "Progress is reviewed regularly with feedback and treatment modifications.",
+    },
+    {
+      title: "Consistency Tracking",
+      copy: "Your routine, recovery and improvements are tracked through the journey.",
+    },
+    {
+      title: "Psychological Counselling",
+      copy: "Stress, emotional wellbeing and mindset support are included where needed.",
+    },
+    {
+      title: "Nutrition & Diet Guidance",
+      copy: "Food and lifestyle guidance supports healing, energy and long-term wellness.",
+    },
+  ];
+
+  return (
+    <section className="section-shell py-24">
+      <div className="rounded-sukham border border-petal bg-white px-5 py-10 shadow-soft md:px-10">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-orange">
+            Your Journey At Sukham
+          </p>
+
+          <h2 className="mt-3 font-serif text-4xl font-bold leading-tight text-plum md:text-6xl">
+            Your Healing Roadmap
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-ink/70 md:text-lg">
+            A guided care journey from assessment to long-term healing,
+            combining yoga, physiotherapy, counselling and nutrition.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-14 max-w-5xl">
+          <div className="relative space-y-8 before:absolute before:left-7 before:top-0 before:h-full before:w-[4px] before:rounded-full before:bg-orange/70">
+            {steps.map((step, index) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, x: -18 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.45, delay: index * 0.06 }}
+                className="relative grid grid-cols-[64px_1fr] gap-4"
+              >
+                <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full border-[5px] border-white bg-gold text-xl font-black text-plum shadow-soft">
+                  {index + 1}
+                </div>
+
+                <article className="rounded-[28px] border border-petal bg-blush/45 p-6 shadow-sm">
+                  <h3 className="font-serif text-2xl font-bold leading-tight text-plum md:text-3xl">
+                    {step.title}
+                  </h3>
+
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-ink/68 md:text-base">
+                    {step.copy}
+                  </p>
+                </article>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function Plans({ items }: { items: typeof plans }) {
   return (
@@ -1872,9 +1954,10 @@ export function SukhamSite() {
         <SukhamPhilosophy />
         <ProblemsWeTreat categories={content.problemCategories} />
         <Services categories={content.serviceCategories} />
+        <SukhamFlowchart />
+        <Plans items={content.plans} />
         <Experts items={content.experts} />
         <Certificates images={content.certificates} />
-        <Plans items={content.plans} />
         <WorkshopsAndBlogs items={content.workshops} />
         <Blogs items={content.blogs} />
         <Gallery images={content.gallery} />
