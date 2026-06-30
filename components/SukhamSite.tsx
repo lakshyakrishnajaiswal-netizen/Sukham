@@ -301,6 +301,76 @@ const defaultContent: SiteContent = {
   serviceCategories: defaultServiceCategories,
 };
 
+function isLocalImageData(value: unknown) {
+  return typeof value === "string" && value.startsWith("data:image");
+}
+
+function prepareContentForStorage(content: SiteContent) {
+  const next = structuredClone(content) as SiteContent;
+
+  next.heroSlides = next.heroSlides.map((slide, index) => ({
+    ...slide,
+    image: isLocalImageData(slide.image)
+      ? defaultContent.heroSlides[index]?.image || defaultContent.heroSlides[0].image
+      : slide.image
+  }));
+
+  next.reviews = next.reviews.map((review, index) => ({
+    ...review,
+    image: isLocalImageData(review.image)
+      ? defaultContent.reviews[index]?.image || defaultContent.reviews[0].image
+      : review.image
+  }));
+
+  next.experts = next.experts.map((expert, index) => ({
+    ...expert,
+    image: isLocalImageData(expert.image)
+      ? defaultContent.experts[index]?.image || defaultContent.experts[0].image
+      : expert.image
+  }));
+
+  next.workshops = next.workshops.map((workshop, index) => ({
+    ...workshop,
+    image: isLocalImageData(workshop.image)
+      ? defaultContent.workshops[index]?.image || defaultContent.workshops[0].image
+      : workshop.image
+  }));
+
+  next.blogs = next.blogs.map((blog, index) => ({
+    ...blog,
+    image: isLocalImageData(blog.image)
+      ? defaultContent.blogs[index]?.image || defaultContent.blogs[0].image
+      : blog.image
+  }));
+
+  next.gallery = next.gallery.filter((image) => !isLocalImageData(image));
+  next.certificates = next.certificates.filter((image) => !isLocalImageData(image));
+
+  next.journeys = next.journeys.map((journey) => ({
+    ...journey,
+    beforeImage: isLocalImageData(journey.beforeImage) ? defaultJourneyImage : journey.beforeImage,
+    afterImage: isLocalImageData(journey.afterImage) ? defaultJourneyImage : journey.afterImage
+  }));
+
+  next.problemCategories = next.problemCategories.map((category) => ({
+    ...category,
+    problems: category.problems.map((problem) => ({
+      ...problem,
+      image: isLocalImageData(problem.image) ? defaultProblemImage : problem.image
+    }))
+  }));
+
+  next.serviceCategories = next.serviceCategories.map((category) => ({
+    ...category,
+    services: category.services.map((service) => ({
+      ...service,
+      image: isLocalImageData(service.image) ? defaultServiceImage : service.image
+    }))
+  }));
+
+  return next;
+}
+
 function useEditableContent() {
   const [content, setContent] = useState<SiteContent>(defaultContent);
 
@@ -341,7 +411,14 @@ function useEditableContent() {
 
   function commit(next: SiteContent) {
     setContent(next);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    const storageContent = prepareContentForStorage(next);
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storageContent));
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storageContent));
+    }
   }
 
   function updateImage(section: keyof SiteContent, index: number, image: string) {
