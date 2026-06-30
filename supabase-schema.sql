@@ -93,6 +93,12 @@ create table appointments (
   created_at timestamptz default now()
 );
 
+create table if not exists site_content (
+  id text primary key default 'main',
+  content jsonb not null,
+  updated_at timestamptz default now()
+);
+
 alter table hero_slides enable row level security;
 alter table experts enable row level security;
 alter table certificates enable row level security;
@@ -102,6 +108,7 @@ alter table blogs enable row level security;
 alter table gallery_images enable row level security;
 alter table reviews enable row level security;
 alter table appointments enable row level security;
+alter table site_content enable row level security;
 
 create policy "Public can read published site content" on hero_slides for select using (true);
 create policy "Public can read experts" on experts for select using (true);
@@ -112,3 +119,4 @@ create policy "Public can read published blogs" on blogs for select using (publi
 create policy "Public can read gallery" on gallery_images for select using (true);
 create policy "Public can read reviews" on reviews for select using (true);
 create policy "Public can create appointments" on appointments for insert with check (true);
+create policy "Public can read site content" on site_content for select using (true);

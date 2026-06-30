@@ -399,27 +399,76 @@ function collectPreloadImages(content: SiteContent) {
   return Array.from(urls);
 }
 
+function mergeContent(parsedContent: Partial<SiteContent>) {
+  const parsed = {
+    ...defaultContent,
+    ...parsedContent,
+    problemCategories:
+      parsedContent.problemCategories || defaultContent.problemCategories,
+    serviceCategories:
+      parsedContent.serviceCategories || defaultContent.serviceCategories,
+  } as SiteContent;
+
+  parsed.reviews = parsed.reviews.map((review: typeof reviews[number] & { video?: string }) => ({
+    ...review,
+    video: review.video || ""
+  }));
+
+  return parsed;
+}
+
+async function loadRemoteContent() {
+  const response = await fetch("/api/content", {
+    cache: "no-store"
+  });
+  const result = await response.json();
+
+  if (!result.ok || !result.content) return null;
+
+  return mergeContent(result.content);
+}
+
+async function saveRemoteContent(content: SiteContent) {
+  const { data } = await supabaseBrowser.auth.getSession();
+  const token = data.session?.access_token;
+
+  if (!token) return;
+
+  await fetch("/api/content", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ content })
+  });
+}
+
 function useEditableContent() {
   const [content, setContent] = useState<SiteContent>(defaultContent);
 
   useEffect(() => {
+    let mounted = true;
+
+    async function loadContent() {
+      try {
+        const remoteContent = await loadRemoteContent();
+
+        if (remoteContent && mounted) {
+          setContent(remoteContent);
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteContent));
+          return;
+        }
+      } catch {
+        // Local fallback keeps the site usable if the database is temporarily unavailable.
+      }
+
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved) {
     try {
       const parsedContent = JSON.parse(saved);
 
-      const parsed = {
-        ...defaultContent,
-        ...parsedContent,
-        problemCategories:
-          parsedContent.problemCategories || defaultContent.problemCategories,
-        serviceCategories:
-          parsedContent.serviceCategories || defaultContent.serviceCategories,
-      };
-      parsed.reviews = parsed.reviews.map((review: typeof reviews[number] & { video?: string }) => ({
-        ...review,
-        video: review.video || ""
-      }));
+      const parsed = mergeContent(parsedContent);
 
       setContent(parsed);
     } catch {
@@ -427,6 +476,13 @@ function useEditableContent() {
       setContent(defaultContent);
     }
   };
+    }
+
+    loadContent();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   function commit(next: SiteContent) {
@@ -439,6 +495,8 @@ function useEditableContent() {
       window.localStorage.removeItem(STORAGE_KEY);
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storageContent));
     }
+
+    void saveRemoteContent(storageContent);
   }
 
   function updateImage(section: keyof SiteContent, index: number, image: string) {
@@ -734,6 +792,7 @@ function removeService(categoryIndex: number, serviceIndex: number) {
   function resetContent() {
     window.localStorage.removeItem(STORAGE_KEY);
     setContent(defaultContent);
+    void saveRemoteContent(defaultContent);
   }
 
   return {
