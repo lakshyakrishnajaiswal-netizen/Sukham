@@ -66,3 +66,22 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ ok: true, appointments: data });
 }
+
+export async function DELETE(request: Request) {
+  const admin = await requireAdmin(request);
+
+  if ("error" in admin) {
+    return NextResponse.json({ ok: false, error: admin.error }, { status: 401 });
+  }
+
+  const { error } = await supabase
+    .from("appointments")
+    .delete()
+    .neq("id", "00000000-0000-0000-0000-000000000000");
+
+  if (error) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

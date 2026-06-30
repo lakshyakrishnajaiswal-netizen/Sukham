@@ -915,7 +915,25 @@ function useAppointments() {
     }
   }
 
-  return { appointments, addAppointment, updateAppointmentStatus };
+  async function clearAppointments() {
+    const { data } = await supabaseBrowser.auth.getSession();
+    const token = data.session?.access_token;
+
+    const response = await fetch("/api/appointments", {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (result.ok) {
+      setAppointments([]);
+    }
+  }
+
+  return { appointments, addAppointment, updateAppointmentStatus, clearAppointments };
 }
 
 function ButtonLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -2784,18 +2802,29 @@ function exportAppointmentsCsv(appointments: AppointmentEntry[]) {
   URL.revokeObjectURL(url);
 }
 
+function exportTodaysAppointmentsCsv(appointments: AppointmentEntry[]) {
+  const today = new Date().toLocaleDateString();
+  const todaysAppointments = appointments.filter(
+    (appointment) => new Date(appointment.created_at).toLocaleDateString() === today
+  );
+
+  exportAppointmentsCsv(todaysAppointments);
+}
+
 function AppointmentReviewSection({
   appointments,
   search,
   statusFilter,
   onSearch,
-  onStatusChange
+  onStatusChange,
+  onClearAppointments
 }: {
   appointments: AppointmentEntry[];
   search: string;
   statusFilter: "All" | AppointmentStatus;
   onSearch: (value: string) => void;
   onStatusChange: (id: string, status: AppointmentStatus) => void;
+  onClearAppointments: () => void;
 }) {
   const filteredAppointments = appointments.filter((appointment) => {
   const haystack = [
@@ -2825,15 +2854,33 @@ function AppointmentReviewSection({
           <h2 className="font-serif text-3xl font-bold text-plum">Appointment review</h2>
           <p className="mt-2 text-sm leading-6 text-ink/65">Review incoming booking requests, approve or reject them, and export all patient entries as a CSV spreadsheet.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => exportAppointmentsCsv(appointments)}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-saffron px-5 py-3 text-sm font-bold text-white shadow-lg shadow-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={appointments.length === 0}
-        >
-          <Download className="h-4 w-4" />
-          CSV Data Export
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => exportTodaysAppointmentsCsv(appointments)}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-saffron px-5 py-3 text-sm font-bold text-white shadow-lg shadow-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={appointments.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            Download today's data
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const confirmed = window.confirm(
+                "Are you sure you want to delete all appointment data? This cannot be undone."
+              );
+
+              if (confirmed) onClearAppointments();
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={appointments.length === 0}
+          >
+            <X className="h-4 w-4" />
+            Delete all data
+          </button>
+        </div>
       </div>
 
       <div className="mt-5 md:hidden">
@@ -3616,7 +3663,7 @@ export function AdminDashboard() {
   removeProblem,
   resetContent
   } = useEditableContent();
-  const { appointments, updateAppointmentStatus } = useAppointments();
+  const { appointments, updateAppointmentStatus, clearAppointments } = useAppointments();
   const [appointmentSearch, setAppointmentSearch] = useState("");
   const [appointmentStatusFilter, setAppointmentStatusFilter] =
   useState<"All" | AppointmentStatus>("All");
@@ -3789,41 +3836,15 @@ export function AdminDashboard() {
 />
 
         <div id="admin-appointments" className="scroll-mt-28">
-  <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.72fr]">
+  <section className="mt-8">
                 <AppointmentReviewSection
                   appointments={appointments}
                   search={appointmentSearch}
                   statusFilter={appointmentStatusFilter}
                   onSearch={setAppointmentSearch}
                   onStatusChange={updateAppointmentStatus}
+                  onClearAppointments={clearAppointments}
                 />
-
-                <div className="soft-card rounded-sukham p-6">
-                  <h2 className="font-serif text-3xl font-bold text-plum">
-                    Supabase tables
-                  </h2>
-
-                  <div className="mt-5 grid gap-3">
-                    {[
-                      "hero_slides",
-                      "experts",
-                      "certificates",
-                      "plans",
-                      "workshops",
-                      "blogs",
-                      "gallery",
-                      "reviews",
-                      "appointments",
-                    ].map((table) => (
-                      <div
-                        key={table}
-                        className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-ink/72"
-                      >
-                        {table}
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </section>
             </div>
       </main>
