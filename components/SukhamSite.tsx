@@ -371,6 +371,34 @@ function prepareContentForStorage(content: SiteContent) {
   return next;
 }
 
+function collectPreloadImages(content: SiteContent) {
+  const urls = new Set<string>();
+  const add = (value: string | undefined) => {
+    if (!value || value.startsWith("data:")) return;
+    urls.add(value);
+  };
+
+  content.heroSlides.forEach((slide) => add(slide.image));
+  content.reviews.forEach((review) => add(review.image));
+  content.journeys.forEach((journey) => {
+    add(journey.beforeImage);
+    add(journey.afterImage);
+  });
+  content.experts.forEach((expert) => add(expert.image));
+  content.certificates.forEach(add);
+  content.workshops.forEach((workshop) => add(workshop.image));
+  content.blogs.forEach((blog) => add(blog.image));
+  content.gallery.forEach(add);
+  content.problemCategories.forEach((category) => {
+    category.problems.forEach((problem) => add(problem.image));
+  });
+  content.serviceCategories.forEach((category) => {
+    category.services.forEach((service) => add(service.image));
+  });
+
+  return Array.from(urls);
+}
+
 function useEditableContent() {
   const [content, setContent] = useState<SiteContent>(defaultContent);
 
@@ -2012,6 +2040,25 @@ function Footer() {
 export function SukhamSite() {
   const [introDone, setIntroDone] = useState(false);
   const { content } = useEditableContent();
+
+  useEffect(() => {
+    if (introDone) return;
+
+    const preloadedImages = collectPreloadImages(content).map((src) => {
+      const image = new window.Image();
+      image.decoding = "async";
+      image.src = src;
+      return image;
+    });
+
+    return () => {
+      preloadedImages.forEach((image) => {
+        image.onload = null;
+        image.onerror = null;
+      });
+    };
+  }, [content, introDone]);
+
   return (
     <>
       <AnimatePresence>{!introDone && <BreathingIntro onDone={() => setIntroDone(true)} />}</AnimatePresence>
