@@ -2286,6 +2286,11 @@ async function getUploadedImage(
   bucket: string,
   fallbackImage: string
 ) {
+  const urlInput = form.elements.namedItem("image") as HTMLInputElement | null;
+  const pastedUrl = urlInput?.value.trim();
+
+  if (pastedUrl) return pastedUrl;
+
   const fileInput = form.elements.namedItem("image_file") as HTMLInputElement;
   const imageFile = fileInput.files?.[0];
 
