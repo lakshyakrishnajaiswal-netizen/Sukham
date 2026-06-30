@@ -3667,6 +3667,30 @@ export function AdminDashboard() {
   const [appointmentSearch, setAppointmentSearch] = useState("");
   const [appointmentStatusFilter, setAppointmentStatusFilter] =
   useState<"All" | AppointmentStatus>("All");
+
+  useEffect(() => {
+    if (!authenticated) return;
+
+    let cancelled = false;
+
+    async function publishLocalContentIfNeeded() {
+      try {
+        const remoteContent = await loadRemoteContent();
+
+        if (!cancelled && !remoteContent) {
+          await saveRemoteContent(prepareContentForStorage(content));
+        }
+      } catch {
+        // Admin image saves still work through the normal save buttons.
+      }
+    }
+
+    publishLocalContentIfNeeded();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authenticated, content]);
   
   if (!authenticated) {
     return (
@@ -3752,7 +3776,7 @@ export function AdminDashboard() {
           <div>
             <p className="text-sm font-bold uppercase text-saffron">Secure Admin Panel</p>
             <h1 className="mt-2 font-serif text-5xl font-bold text-plum">Sukham Dashboard</h1>
-            <p className="mt-4 max-w-2xl leading-8 text-ink/70">Use the upload controls below to physically replace pictures across the prototype. Changes are saved in this browser and immediately appear on the public site.</p>
+            <p className="mt-4 max-w-2xl leading-8 text-ink/70">Use the upload controls below to physically replace pictures across the website. Changes are saved to Supabase and appear on the public site across devices.</p>
           </div>
           <div className="flex gap-3">
             <div className="relative">
