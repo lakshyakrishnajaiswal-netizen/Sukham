@@ -388,18 +388,10 @@ function useEditableContent() {
         serviceCategories:
           parsedContent.serviceCategories || defaultContent.serviceCategories,
       };
-        setContent(parsed);
-
       parsed.reviews = parsed.reviews.map((review: typeof reviews[number] & { video?: string }) => ({
         ...review,
         video: review.video || ""
       }));
-
-      parsed.services = parsed.services.map((service: string | ServiceItem) =>
-        typeof service === "string"
-          ? { title: service, image: defaultServiceImage }
-          : service
-      );
 
       setContent(parsed);
     } catch {
@@ -2064,23 +2056,41 @@ function ImageUploadCard({
   portrait?: boolean;
 }) {
   const [imageUrl, setImageUrl] = useState("");
+  const [pendingImage, setPendingImage] = useState("");
+  const [saveState, setSaveState] = useState<"idle" | "uploading" | "ready" | "saved" | "error">("idle");
+  const previewImage = pendingImage || image;
+
+  useEffect(() => {
+    setPendingImage("");
+    setSaveState("idle");
+  }, [image]);
+
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    onChange(await uploadImageFile(file, bucket));
+
+    try {
+      setSaveState("uploading");
+      setPendingImage(await uploadImageFile(file, bucket));
+      setSaveState("ready");
+    } catch {
+      setSaveState("error");
+    } finally {
+      event.target.value = "";
+    }
   }
 
   return (
     <article className="overflow-hidden rounded-sukham border border-gold/20 bg-white shadow-sm">
       <div className={`relative bg-blush ${portrait ? "h-52" : "h-40"}`}>
-        <Image src={image} alt={title} fill className="object-cover" unoptimized={image.startsWith("data:")} />
+        <Image src={previewImage} alt={title} fill className="object-cover" unoptimized={previewImage.startsWith("data:")} />
       </div>
       <div className="p-4">
         <h3 className="font-serif text-xl font-bold text-plum">{title}</h3>
         {subtitle && <p className="mt-1 min-h-10 text-sm leading-5 text-ink/62">{subtitle}</p>}
         <label className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-saffron px-4 py-3 text-sm font-bold text-white shadow-lg shadow-orange-100">
           <Upload className="h-4 w-4" />
-          Change Picture
+          {saveState === "uploading" ? "Uploading..." : "Change Picture"}
           <input type="file" accept="image/*" className="sr-only" onChange={handleFile} />
         </label>
         <form
@@ -2091,7 +2101,8 @@ function ImageUploadCard({
 
             if (!cleanUrl) return;
 
-            onChange(cleanUrl);
+            setPendingImage(cleanUrl);
+            setSaveState("ready");
             setImageUrl("");
           }}
           className="mt-3 grid gap-2"
@@ -2110,6 +2121,27 @@ function ImageUploadCard({
             Use URL
           </button>
         </form>
+        <button
+          type="button"
+          disabled={!pendingImage || saveState === "uploading"}
+          onClick={() => {
+            if (!pendingImage) return;
+            onChange(pendingImage);
+            setSaveState("saved");
+          }}
+          className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-saffron px-4 py-3 text-sm font-bold text-white shadow-lg shadow-orange-100 transition disabled:cursor-not-allowed disabled:bg-petal disabled:text-ink/40 disabled:shadow-none"
+        >
+          Save Changes
+        </button>
+        {saveState === "ready" && (
+          <p className="mt-2 text-center text-xs font-semibold text-ink/55">Preview updated. Click Save Changes to keep it after refresh.</p>
+        )}
+        {saveState === "saved" && (
+          <p className="mt-2 text-center text-xs font-semibold text-green-700">Saved in this browser.</p>
+        )}
+        {saveState === "error" && (
+          <p className="mt-2 text-center text-xs font-semibold text-red-600">Upload failed. Try a smaller image or paste the Supabase URL.</p>
+        )}
       </div>
     </article>
   );
