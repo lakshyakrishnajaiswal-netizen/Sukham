@@ -7,7 +7,10 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 
 export const metadata: Metadata = {
   title: "Sukham Yoga & Physiotherapy Centre",
-  description: "Evidence-based physiotherapy meets therapeutic yoga for holistic healing in JP Nagar 8th Phase, Bangalore."
+  description: "Evidence-based physiotherapy meets therapeutic yoga for holistic healing in JP Nagar 8th Phase, Bangalore.",
+  verification: {
+  google: "MPioxkGfPpXcM_7Os6lOF0cwJlgv6XCYqI_LoFYQIfQ",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
